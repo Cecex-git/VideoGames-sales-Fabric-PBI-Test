@@ -1,0 +1,39 @@
+/// Fabric workspace ID hosting the source lakehouse.
+expression FabricWorkspaceId = "00000000-0000-0000-0000-000000000000" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 9aa28c2c-c7e6-42ce-a7be-3676d4dd4310
+
+/// Fabric lakehouse ID hosting the source table.
+expression FabricLakehouseId = "11111111-1111-1111-1111-111111111111" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 12af1f81-2898-4d48-9841-0d3ccb6f223d
+
+/// Source lakehouse table name containing the raw video game sales data.
+expression VideoGameSalesLakehouseTable = "VideoGameSalesRaw" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 773d4d2a-1e18-4617-b710-e4480fb392e9
+
+/// Typed base query for the Kaggle video game sales data stored in a Fabric Lakehouse table.
+expression VideoGameSalesTypedSource =
+		let
+		    Source = Lakehouse.Contents([CreateNavigationProperties = false, EnableFolding = false]),
+		    WorkspaceData = Source{[workspaceId = FabricWorkspaceId]}[Data],
+		    LakehouseData = WorkspaceData{[lakehouseId = FabricLakehouseId]}[Data],
+		    RawTable = LakehouseData{[Id = VideoGameSalesLakehouseTable, ItemKind = "Table"]}[Data],
+		    TypedColumns = Table.TransformColumnTypes(RawTable, {
+		        {"img", type text},
+		        {"title", type text},
+		        {"console", type text},
+		        {"genre", type text},
+		        {"publisher", type text},
+		        {"developer", type text},
+		        {"critic_score", type number},
+		        {"total_sales", type number},
+		        {"na_sales", type number},
+		        {"jp_sales", type number},
+		        {"pal_sales", type number},
+		        {"other_sales", type number},
+		        {"release_date", type date},
+		        {"last_update", type date}
+		    })
+		in
+		    TypedColumns
+	lineageTag: fbd68799-8ec4-45f5-a741-6daec243ee75
+

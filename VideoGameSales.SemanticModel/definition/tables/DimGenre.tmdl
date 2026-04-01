@@ -1,0 +1,22 @@
+/// Distinct list of genres.
+table DimGenre
+	lineageTag: a3664a1c-b4b1-4d77-a76e-2b2174abfe46
+
+	column Genre
+		dataType: string
+		isNullable: false
+		lineageTag: e33f311c-bbb3-4efd-812c-7a3a0593ba69
+		sourceColumn: Genre
+
+	partition DimGenre = m
+		mode: import
+		source =
+				let
+				    Source = VideoGameSalesTypedSource,
+				    KeepColumns = Table.SelectColumns(Source, {"genre"}),
+				    DistinctRows = Table.Distinct(KeepColumns),
+				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"genre", "Genre"}}),
+				    SortedRows = Table.Sort(RenamedColumns, {{"Genre", Order.Ascending}})
+				in
+				    SortedRows
+

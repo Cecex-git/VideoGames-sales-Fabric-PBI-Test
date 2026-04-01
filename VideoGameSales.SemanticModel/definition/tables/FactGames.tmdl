@@ -1,0 +1,172 @@
+/// Video game title grain imported from the typed CSV query with a generated surrogate key.
+table FactGames
+	lineageTag: c45ce91a-c80f-4c1b-aed7-e25751e19f1f
+
+	/// Distinct count of game rows in scope.
+	measure Titles = DISTINCTCOUNT(FactGames[GameKey])
+		formatString: #,0
+		displayFolder: Core Metrics
+		lineageTag: edbbb36a-1840-4647-a0c4-fde21c6d8c94
+
+	/// Total global sales in millions of units.
+	measure 'Total Sales' = SUM(FactGames[TotalSales])
+		formatString: #,0.00
+		displayFolder: Core Metrics
+		lineageTag: c81864b1-b301-42c3-9ad2-efcd47566c61
+
+	/// Total North America sales in millions of units.
+	measure 'NA Sales' = SUM(FactGames[NASales])
+		formatString: #,0.00
+		displayFolder: Regional Sales
+		lineageTag: 2173ca57-b069-46ce-8b09-d98ec862a08a
+
+	/// Total Japan sales in millions of units.
+	measure 'JP Sales' = SUM(FactGames[JPSales])
+		formatString: #,0.00
+		displayFolder: Regional Sales
+		lineageTag: 17f02eef-3375-4bf3-bd22-3416577af446
+
+	/// Total PAL sales in millions of units.
+	measure 'PAL Sales' = SUM(FactGames[PALSales])
+		formatString: #,0.00
+		displayFolder: Regional Sales
+		lineageTag: e01cfb84-4c9b-4a14-b0d2-3aabae7c4fe8
+
+	/// Total other-region sales in millions of units.
+	measure 'Other Sales' = SUM(FactGames[OtherSales])
+		formatString: #,0.00
+		displayFolder: Regional Sales
+		lineageTag: 0deb0696-8557-4434-ad56-7c03c562c2b0
+
+	/// Average critic score over titles in scope.
+	measure 'Average Critic Score' = AVERAGE(FactGames[CriticScore])
+		formatString: 0.0
+		displayFolder: Quality Metrics
+		lineageTag: 1f672b5d-90ae-40a3-b161-ed9799f34ee9
+
+	/// Average total sales per title in the current filter context.
+	measure 'Average Sales per Title' = DIVIDE([Total Sales], [Titles])
+		formatString: #,0.00
+		displayFolder: Core Metrics
+		lineageTag: 2c0b9cfc-09ae-4113-a482-2df128e91fae
+
+	/// Titles that have a critic score available.
+	measure 'Titles with Critic Score' = CALCULATE([Titles], NOT ISBLANK(FactGames[CriticScore]))
+		formatString: #,0
+		displayFolder: Quality Metrics
+		lineageTag: 05a63c66-e15a-4d7f-af19-e24e202e189d
+
+	column GameKey
+		dataType: int64
+		isNullable: false
+		lineageTag: 9e755bf2-97c9-415c-83e6-c5bf2ff8034e
+		summarizeBy: none
+		sourceColumn: GameKey
+
+	column Title
+		dataType: string
+		isNullable: false
+		lineageTag: f10532d4-4d7c-4e86-bb5d-67d3de953f28
+		summarizeBy: none
+		sourceColumn: Title
+
+	column Console
+		dataType: string
+		isNullable: false
+		lineageTag: 96b98b79-653f-4af5-87be-09e9ae352ca5
+		summarizeBy: none
+		sourceColumn: Console
+
+	column Genre
+		dataType: string
+		isNullable: false
+		lineageTag: 6732f392-df1d-4119-8d08-7812a0901072
+		summarizeBy: none
+		sourceColumn: Genre
+
+	column Publisher
+		dataType: string
+		isNullable: false
+		lineageTag: bdfe17b2-b27a-4275-bfb1-85976e01a8bd
+		summarizeBy: none
+		sourceColumn: Publisher
+
+	column Developer
+		dataType: string
+		lineageTag: 27dacf55-8748-4138-b0b6-2b64ade92c11
+		summarizeBy: none
+		sourceColumn: Developer
+
+	column CriticScore
+		dataType: double
+		lineageTag: edee7082-25e1-461e-b875-2b33b509b883
+		sourceColumn: CriticScore
+
+	column TotalSales
+		dataType: double
+		lineageTag: a3ae8302-c1ac-40fa-8319-13a90faba4c3
+		sourceColumn: TotalSales
+
+	column NASales
+		dataType: double
+		lineageTag: aa6c3adb-3973-4b1e-9318-d1ee01d51e91
+		sourceColumn: NASales
+
+	column JPSales
+		dataType: double
+		lineageTag: 6e3949be-3446-4cc1-bc19-03a6447e7313
+		sourceColumn: JPSales
+
+	column PALSales
+		dataType: double
+		lineageTag: f750dfcb-73c1-462f-b1d3-e6eed86c167a
+		sourceColumn: PALSales
+
+	column OtherSales
+		dataType: double
+		lineageTag: 97bf7858-9dbf-4798-9808-c0b0d901c554
+		sourceColumn: OtherSales
+
+	column ReleaseDate
+		dataType: dateTime
+		lineageTag: bf4a760b-9f9b-49f7-aabb-328002a4558f
+		sourceColumn: ReleaseDate
+
+	column LastUpdate
+		dataType: dateTime
+		lineageTag: c097448b-547d-4079-a77b-e05645068ef1
+		sourceColumn: LastUpdate
+
+	column BoxArtPath
+		dataType: string
+		isNullable: false
+		lineageTag: 380f9b62-c8ad-40b1-960b-c5b134bb8db5
+		summarizeBy: none
+		sourceColumn: BoxArtPath
+
+	partition FactGames = m
+		mode: import
+		source =
+				let
+				    Source = VideoGameSalesTypedSource,
+				    RenamedColumns = Table.RenameColumns(Source, {
+				        {"img", "BoxArtPath"},
+				        {"title", "Title"},
+				        {"console", "Console"},
+				        {"genre", "Genre"},
+				        {"publisher", "Publisher"},
+				        {"developer", "Developer"},
+				        {"critic_score", "CriticScore"},
+				        {"total_sales", "TotalSales"},
+				        {"na_sales", "NASales"},
+				        {"jp_sales", "JPSales"},
+				        {"pal_sales", "PALSales"},
+				        {"other_sales", "OtherSales"},
+				        {"release_date", "ReleaseDate"},
+				        {"last_update", "LastUpdate"}
+				    }),
+				    AddedIndex = Table.AddIndexColumn(RenamedColumns, "GameKey", 1, 1, Int64.Type),
+				    ReorderedColumns = Table.ReorderColumns(AddedIndex, {"GameKey", "Title", "Console", "Genre", "Publisher", "Developer", "CriticScore", "TotalSales", "NASales", "JPSales", "PALSales", "OtherSales", "ReleaseDate", "LastUpdate", "BoxArtPath"})
+				in
+				    ReorderedColumns
+

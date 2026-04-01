@@ -1,0 +1,13 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",
+  "themeCollection": {},
+  "layoutOptimization": "None",
+  "reportSource": "Default",
+  "annotations": [
+    {
+      "name": "ProjectStatus",
+      "value": "Scaffolded blank PBIR report. Add visuals in Power BI Desktop."
+    }
+  ]
+}
+

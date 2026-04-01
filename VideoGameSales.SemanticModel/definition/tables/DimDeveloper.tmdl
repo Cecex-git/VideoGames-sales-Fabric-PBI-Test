@@ -1,0 +1,23 @@
+/// Distinct list of developers.
+table DimDeveloper
+	lineageTag: 7fa10d9d-972c-42c0-83e1-f6ef4262bde8
+
+	column Developer
+		dataType: string
+		isNullable: false
+		lineageTag: dd5341d8-aaf8-44ad-b6dc-2c055b42305d
+		sourceColumn: Developer
+
+	partition DimDeveloper = m
+		mode: import
+		source =
+				let
+				    Source = VideoGameSalesTypedSource,
+				    KeepColumns = Table.SelectColumns(Source, {"developer"}),
+				    ReplacedNulls = Table.ReplaceValue(KeepColumns, null, "Unknown", Replacer.ReplaceValue, {"developer"}),
+				    DistinctRows = Table.Distinct(ReplacedNulls),
+				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"developer", "Developer"}}),
+				    SortedRows = Table.Sort(RenamedColumns, {{"Developer", Order.Ascending}})
+				in
+				    SortedRows
+

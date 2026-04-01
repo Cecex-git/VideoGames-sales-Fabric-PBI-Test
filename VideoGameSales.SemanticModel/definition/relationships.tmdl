@@ -1,0 +1,21 @@
+relationship FactGames_Console_DimConsole
+	fromColumn: FactGames.Console
+	toColumn: DimConsole.Console
+
+relationship FactGames_Genre_DimGenre
+	fromColumn: FactGames.Genre
+	toColumn: DimGenre.Genre
+
+relationship FactGames_Publisher_DimPublisher
+	fromColumn: FactGames.Publisher
+	toColumn: DimPublisher.Publisher
+
+relationship FactGames_Developer_DimDeveloper
+	fromColumn: FactGames.Developer
+	toColumn: DimDeveloper.Developer
+
+relationship FactGames_ReleaseDate_DimDate
+	joinOnDateBehavior: datePartOnly
+	fromColumn: FactGames.ReleaseDate
+	toColumn: DimDate.Date
+

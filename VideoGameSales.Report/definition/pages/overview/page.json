@@ -1,0 +1,15 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.0.0/schema.json",
+  "name": "overview",
+  "displayName": "Overview",
+  "displayOption": "FitToPage",
+  "width": 1280,
+  "height": 720,
+  "annotations": [
+    {
+      "name": "PlannedVisuals",
+      "value": "Cards, sales trend, regional split, genre breakdown, platform breakdown, top titles."
+    }
+  ]
+}
+

@@ -1,0 +1,22 @@
+/// Distinct list of consoles/platforms.
+table DimConsole
+	lineageTag: 4be7bafc-62ec-4d82-b3e6-4c2eae946d98
+
+	column Console
+		dataType: string
+		isNullable: false
+		lineageTag: bc81f648-17d7-4905-83c8-1d5e781889c6
+		sourceColumn: Console
+
+	partition DimConsole = m
+		mode: import
+		source =
+				let
+				    Source = VideoGameSalesTypedSource,
+				    KeepColumns = Table.SelectColumns(Source, {"console"}),
+				    DistinctRows = Table.Distinct(KeepColumns),
+				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"console", "Console"}}),
+				    SortedRows = Table.Sort(RenamedColumns, {{"Console", Order.Ascending}})
+				in
+				    SortedRows
+

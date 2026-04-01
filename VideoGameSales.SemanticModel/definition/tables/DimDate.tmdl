@@ -1,0 +1,58 @@
+/// Calendar table derived from release dates in the source CSV.
+table DimDate
+	lineageTag: 2def8b1a-ba77-4a63-98e8-e52ab8ca1449
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isUnique
+		isNullable: false
+		lineageTag: db69be70-3665-4e2c-84d0-2b1c7881f1cd
+		sourceColumn: Date
+
+	column Year
+		dataType: int64
+		isNullable: false
+		lineageTag: c4e9cd0b-ee02-4d76-8137-2f875e1b88f9
+		summarizeBy: none
+		sourceColumn: Year
+
+	column 'Month Number'
+		dataType: int64
+		isNullable: false
+		lineageTag: 528947b5-f73c-4ee4-be26-9862f6b6c9e4
+		summarizeBy: none
+		sourceColumn: Month Number
+
+	column Month
+		dataType: string
+		isNullable: false
+		lineageTag: 54befe37-fc3c-470f-9370-f09a53f047a8
+		summarizeBy: none
+		sourceColumn: Month
+		sortByColumn: 'Month Number'
+
+	column Quarter
+		dataType: string
+		isNullable: false
+		lineageTag: f73d08a3-313b-4f9f-91cb-30f0fa3426b6
+		summarizeBy: none
+		sourceColumn: Quarter
+
+	partition DimDate = m
+		mode: import
+		source =
+				let
+				    Source = VideoGameSalesTypedSource,
+				    ReleaseDates = Table.SelectRows(Table.SelectColumns(Source, {"release_date"}), each [release_date] <> null),
+				    MinDate = Date.From(List.Min(ReleaseDates[release_date])),
+				    MaxDate = Date.From(List.Max(ReleaseDates[release_date])),
+				    DateList = List.Dates(MinDate, Duration.Days(MaxDate - MinDate) + 1, #duration(1, 0, 0, 0)),
+				    ToTable = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}),
+				    AddYear = Table.AddColumn(ToTable, "Year", each Date.Year([Date]), Int64.Type),
+				    AddMonthNumber = Table.AddColumn(AddYear, "Month Number", each Date.Month([Date]), Int64.Type),
+				    AddMonth = Table.AddColumn(AddMonthNumber, "Month", each Date.ToText([Date], "MMM"), type text),
+				    AddQuarter = Table.AddColumn(AddMonth, "Quarter", each "Q" & Number.ToText(Date.QuarterOfYear([Date])), type text)
+				in
+				    AddQuarter
+

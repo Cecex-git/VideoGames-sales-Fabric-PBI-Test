@@ -1,0 +1,22 @@
+/// Distinct list of publishers.
+table DimPublisher
+	lineageTag: 218a5a20-f8d1-4ac5-a734-eb9667995b1b
+
+	column Publisher
+		dataType: string
+		isNullable: false
+		lineageTag: cc97de66-86b0-469a-b75b-493065e5ec0f
+		sourceColumn: Publisher
+
+	partition DimPublisher = m
+		mode: import
+		source =
+				let
+				    Source = VideoGameSalesTypedSource,
+				    KeepColumns = Table.SelectColumns(Source, {"publisher"}),
+				    DistinctRows = Table.Distinct(KeepColumns),
+				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"publisher", "Publisher"}}),
+				    SortedRows = Table.Sort(RenamedColumns, {{"Publisher", Order.Ascending}})
+				in
+				    SortedRows
+
