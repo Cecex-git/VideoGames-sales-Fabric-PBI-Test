@@ -76,7 +76,9 @@ The workflow in `.github\workflows\deploy-dev.yml` deploys on pushes to the `dev
 
 Configure:
 
-- GitHub secret `AZURE_CREDENTIALS`
+- GitHub secret `AZURE_CLIENT_ID`
+- GitHub secret `AZURE_CLIENT_SECRET`
+- GitHub secret `AZURE_TENANT_ID`
 - GitHub environment/repository variable `FABRIC_DEV_WORKSPACE`
 - GitHub secret `FABRIC_DEV_SOURCE_WORKSPACE_ID`
 - GitHub secret `FABRIC_DEV_SOURCE_LAKEHOUSE_ID`

@@ -26,11 +26,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Azure login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          allow-no-subscriptions: true
+      - name: Azure CLI login
+        shell: pwsh
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          if (-not $env:AZURE_CLIENT_ID) {
+            throw "GitHub secret AZURE_CLIENT_ID is not set."
+          }
+
+          if (-not $env:AZURE_CLIENT_SECRET) {
+            throw "GitHub secret AZURE_CLIENT_SECRET is not set."
+          }
+
+          if (-not $env:AZURE_TENANT_ID) {
+            throw "GitHub secret AZURE_TENANT_ID is not set."
+          }
+
+          az login --service-principal --username "$env:AZURE_CLIENT_ID" --password "$env:AZURE_CLIENT_SECRET" --tenant "$env:AZURE_TENANT_ID" --allow-no-subscriptions
 
       - name: Verify Fabric CLI
         shell: pwsh
