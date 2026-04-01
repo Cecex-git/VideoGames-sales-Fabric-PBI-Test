@@ -11,3 +11,9 @@ find_replace:
     replace_value:
       dev: "__FABRIC_SOURCE_TABLE_NAME__"
 
+semantic_model_binding:
+  models:
+    - semantic_model_name: "VideoGameSales"
+      connection_id:
+        dev: "__FABRIC_SEMANTIC_MODEL_CONNECTION_ID__"
+

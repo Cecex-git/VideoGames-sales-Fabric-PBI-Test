@@ -26,6 +26,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source-workspace-id", help="Source Fabric workspace ID for lakehouse-backed model binding.")
     parser.add_argument("--source-lakehouse-id", help="Source Fabric lakehouse ID for lakehouse-backed model binding.")
     parser.add_argument("--source-table-name", help="Source Fabric lakehouse table name for the semantic model.")
+    parser.add_argument(
+        "--semantic-model-connection-id",
+        help="Fabric connection ID used to bind the deployed semantic model for refresh.",
+    )
     return parser
 
 
@@ -34,6 +38,7 @@ def get_required_source_settings(args: argparse.Namespace) -> dict[str, str]:
         "workspace_id": args.source_workspace_id or os.getenv("FABRIC_SOURCE_WORKSPACE_ID"),
         "lakehouse_id": args.source_lakehouse_id or os.getenv("FABRIC_SOURCE_LAKEHOUSE_ID"),
         "table_name": args.source_table_name or os.getenv("FABRIC_SOURCE_TABLE_NAME"),
+        "connection_id": args.semantic_model_connection_id or os.getenv("FABRIC_SEMANTIC_MODEL_CONNECTION_ID"),
     }
     missing = [name for name, value in source_settings.items() if not value]
     if missing:
@@ -52,6 +57,7 @@ def build_runtime_parameter_file(repository_directory: str, source_settings: dic
         template.replace("__FABRIC_SOURCE_WORKSPACE_ID__", source_settings["workspace_id"])
         .replace("__FABRIC_SOURCE_LAKEHOUSE_ID__", source_settings["lakehouse_id"])
         .replace("__FABRIC_SOURCE_TABLE_NAME__", source_settings["table_name"])
+        .replace("__FABRIC_SEMANTIC_MODEL_CONNECTION_ID__", source_settings["connection_id"])
     )
 
     temp_file = tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False, encoding="utf-8")

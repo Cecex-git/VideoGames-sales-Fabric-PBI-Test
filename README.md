@@ -83,6 +83,7 @@ Configure:
 - GitHub secret `FABRIC_DEV_SOURCE_WORKSPACE_ID`
 - GitHub secret `FABRIC_DEV_SOURCE_LAKEHOUSE_ID`
 - GitHub secret `FABRIC_DEV_SOURCE_TABLE_NAME`
+- GitHub secret `FABRIC_DEV_CONNECTION_ID`
 
 ## Source parameterization
 
@@ -100,7 +101,7 @@ Recommended setup:
 
 1. Upload the source data into a Fabric Lakehouse.
 2. Materialize it as a table such as `VideoGameSalesRaw`.
-3. Provide the real source workspace ID, lakehouse ID, and table name through GitHub secrets or local environment variables.
+3. Provide the real source workspace ID, lakehouse ID, table name, and semantic model connection ID through GitHub secrets or local environment variables.
 
 This keeps the public repository free of machine-specific paths and makes the semantic model CI/CD friendly.
 
@@ -109,8 +110,9 @@ This keeps the public repository free of machine-specific paths and makes the se
 - `FABRIC_SOURCE_WORKSPACE_ID`
 - `FABRIC_SOURCE_LAKEHOUSE_ID`
 - `FABRIC_SOURCE_TABLE_NAME`
+- `FABRIC_SEMANTIC_MODEL_CONNECTION_ID`
 
-It then creates a temporary parameter file for the deployment run, so the committed repository never contains your real Fabric source identifiers.
+It then creates a temporary parameter file for the deployment run, so the committed repository never contains your real Fabric source identifiers or connection IDs.
 
 ## Notes
 
