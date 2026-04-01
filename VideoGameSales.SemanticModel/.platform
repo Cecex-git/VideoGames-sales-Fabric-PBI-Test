@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "metadata": {
+    "displayName": "VideoGameSales",
+    "type": "SemanticModel",
+    "description": "Semantic model for the Video Game Sales PBIP project."
+  },
+  "config": {
+    "logicalId": "6bce31b8-8b99-4c24-a16a-fd955274e449"
+  }
+}
