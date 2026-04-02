@@ -13,6 +13,34 @@ expression VideoGameSalesLakehouseTable = "VideoGameSalesRaw" meta [IsParameterQ
 /// Typed base query for the Kaggle video game sales data stored in a Fabric Lakehouse table.
 expression VideoGameSalesTypedSource =
 		let
+		    ParseLakehouseDate = (value as any) as nullable date =>
+		        if value = null then
+		            null
+		        else if Value.Is(value, type date) then
+		            Date.From(value)
+		        else
+		            let
+		                TextValue = Text.Trim(Text.From(value)),
+		                ParsedValue =
+		                    if TextValue = "" then
+		                        null
+		                    else
+		                        let
+		                            ParsedDdMmYyyy = try Date.FromText(TextValue, [Format = "dd-MM-yyyy"]),
+		                            ParsedIso = if ParsedDdMmYyyy[HasError] then try Date.FromText(TextValue) else ParsedDdMmYyyy
+		                        in
+		                            if not ParsedDdMmYyyy[HasError] then
+		                                ParsedDdMmYyyy[Value]
+		                            else if not ParsedIso[HasError] then
+		                                ParsedIso[Value]
+		                            else
+		                                error Error.Record(
+		                                    "DataFormat.Error",
+		                                    "Unable to parse Lakehouse date value.",
+		                                    TextValue
+		                                )
+		            in
+		                ParsedValue,
 		    Source = Lakehouse.Contents([CreateNavigationProperties = false, EnableFolding = false]),
 		    WorkspaceData = Source{[workspaceId = FabricWorkspaceId]}[Data],
 		    LakehouseData = WorkspaceData{[lakehouseId = FabricLakehouseId]}[Data],
@@ -29,11 +57,16 @@ expression VideoGameSalesTypedSource =
 		        {"na_sales", type number},
 		        {"jp_sales", type number},
 		        {"pal_sales", type number},
-		        {"other_sales", type number},
-		        {"release_date", type date},
-		        {"last_update", type date}
-		    })
+		        {"other_sales", type number}
+		    }),
+		    ParsedDates = Table.TransformColumns(
+		        TypedColumns,
+		        {
+		            {"release_date", each ParseLakehouseDate(_), type nullable date},
+		            {"last_update", each ParseLakehouseDate(_), type nullable date}
+		        }
+		    )
 		in
-		    TypedColumns
+		    ParsedDates
 	lineageTag: fbd68799-8ec4-45f5-a741-6daec243ee75
 
