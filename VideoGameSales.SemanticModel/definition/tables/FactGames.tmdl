@@ -77,12 +77,28 @@ table FactGames
 		summarizeBy: none
 		sourceColumn: Console
 
+	column ConsoleKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 9bd14e89-31fc-4cea-bd1b-d61877be1260
+		summarizeBy: none
+		sourceColumn: ConsoleKey
+
 	column Genre
 		dataType: string
 		isNullable: false
 		lineageTag: 6732f392-df1d-4119-8d08-7812a0901072
 		summarizeBy: none
 		sourceColumn: Genre
+
+	column GenreKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 51831c25-ca91-4ea2-ae0d-2f56ef69a326
+		summarizeBy: none
+		sourceColumn: GenreKey
 
 	column Publisher
 		dataType: string
@@ -91,11 +107,27 @@ table FactGames
 		summarizeBy: none
 		sourceColumn: Publisher
 
+	column PublisherKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 9b5fd6b1-91c2-414f-a43b-64ae2a9a4b70
+		summarizeBy: none
+		sourceColumn: PublisherKey
+
 	column Developer
 		dataType: string
 		lineageTag: 27dacf55-8748-4138-b0b6-2b64ade92c11
 		summarizeBy: none
 		sourceColumn: Developer
+
+	column DeveloperKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 4694ca6a-f8f5-4e3b-bb3f-bc4139178efb
+		summarizeBy: none
+		sourceColumn: DeveloperKey
 
 	column CriticScore
 		dataType: double
@@ -149,13 +181,35 @@ table FactGames
 		source =
 				let
 				    Source = VideoGameSalesTypedSource,
-				    RenamedColumns = Table.RenameColumns(Source, {
+				    ShapedTextColumns = Table.TransformColumns(
+				        Source,
+				        {
+				            {"console", each NormalizeCategoryLabel(_), type text},
+				            {"genre", each NormalizeCategoryLabel(_), type text},
+				            {"publisher", each NormalizeCategoryLabel(_), type text},
+				            {"developer", each NormalizeCategoryLabel(_), type text}
+				        }
+				    ),
+				    AddedCategoryKeys = Table.AddColumns(
+				        ShapedTextColumns,
+				        {
+				            {"console_key", each NormalizeCategoryKey([console]), type text},
+				            {"genre_key", each NormalizeCategoryKey([genre]), type text},
+				            {"publisher_key", each NormalizeCategoryKey([publisher]), type text},
+				            {"developer_key", each NormalizeCategoryKey([developer]), type text}
+				        }
+				    ),
+				    RenamedColumns = Table.RenameColumns(AddedCategoryKeys, {
 				        {"img", "BoxArtPath"},
 				        {"title", "Title"},
 				        {"console", "Console"},
+				        {"console_key", "ConsoleKey"},
 				        {"genre", "Genre"},
+				        {"genre_key", "GenreKey"},
 				        {"publisher", "Publisher"},
+				        {"publisher_key", "PublisherKey"},
 				        {"developer", "Developer"},
+				        {"developer_key", "DeveloperKey"},
 				        {"critic_score", "CriticScore"},
 				        {"total_sales", "TotalSales"},
 				        {"na_sales", "NASales"},
@@ -166,7 +220,7 @@ table FactGames
 				        {"last_update", "LastUpdate"}
 				    }),
 				    AddedIndex = Table.AddIndexColumn(RenamedColumns, "GameKey", 1, 1, Int64.Type),
-				    ReorderedColumns = Table.ReorderColumns(AddedIndex, {"GameKey", "Title", "Console", "Genre", "Publisher", "Developer", "CriticScore", "TotalSales", "NASales", "JPSales", "PALSales", "OtherSales", "ReleaseDate", "LastUpdate", "BoxArtPath"})
+				    ReorderedColumns = Table.ReorderColumns(AddedIndex, {"GameKey", "Title", "Console", "ConsoleKey", "Genre", "GenreKey", "Publisher", "PublisherKey", "Developer", "DeveloperKey", "CriticScore", "TotalSales", "NASales", "JPSales", "PALSales", "OtherSales", "ReleaseDate", "LastUpdate", "BoxArtPath"})
 				in
 				    ReorderedColumns
 

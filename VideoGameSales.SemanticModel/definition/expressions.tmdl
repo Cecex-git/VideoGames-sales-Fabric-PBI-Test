@@ -41,6 +41,13 @@ expression VideoGameSalesTypedSource =
 		                                )
 		            in
 		                ParsedValue,
+		    NormalizeCategoryLabel = (value as any) as text =>
+		        let
+		            TextValue = if value = null then "" else Text.Trim(Text.From(value))
+		        in
+		            if TextValue = "" then "Unknown" else TextValue,
+		    NormalizeCategoryKey = (value as any) as text =>
+		        Text.Upper(NormalizeCategoryLabel(value)),
 		    Source = Lakehouse.Contents([CreateNavigationProperties = false, EnableFolding = false]),
 		    WorkspaceData = Source{[workspaceId = FabricWorkspaceId]}[Data],
 		    LakehouseData = WorkspaceData{[lakehouseId = FabricLakehouseId]}[Data],

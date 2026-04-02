@@ -8,15 +8,29 @@ table DimPublisher
 		lineageTag: cc97de66-86b0-469a-b75b-493065e5ec0f
 		sourceColumn: Publisher
 
+	column PublisherKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 9e46910f-8c03-4fa8-b41a-c88e9ac0b4de
+		sourceColumn: PublisherKey
+
 	partition DimPublisher = m
 		mode: import
 		source =
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"publisher"}),
-				    DistinctRows = Table.Distinct(KeepColumns),
-				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"publisher", "Publisher"}}),
-				    SortedRows = Table.Sort(RenamedColumns, {{"Publisher", Order.Ascending}})
+				    AddedColumns = Table.AddColumns(
+				        KeepColumns,
+				        {
+				            {"Publisher", each NormalizeCategoryLabel([publisher]), type text},
+				            {"PublisherKey", each NormalizeCategoryKey([publisher]), type text}
+				        }
+				    ),
+				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Publisher", "PublisherKey"}),
+				    SortedRows = Table.Sort(SelectedColumns, {{"Publisher", Order.Ascending}}),
+				    DistinctRows = Table.Distinct(SortedRows, {"PublisherKey"})
 				in
-				    SortedRows
+				    DistinctRows
 

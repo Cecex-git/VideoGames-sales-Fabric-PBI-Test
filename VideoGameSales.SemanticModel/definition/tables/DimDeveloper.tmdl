@@ -8,16 +8,29 @@ table DimDeveloper
 		lineageTag: dd5341d8-aaf8-44ad-b6dc-2c055b42305d
 		sourceColumn: Developer
 
+	column DeveloperKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 9ab0b84a-3286-4fdd-a8fa-62148a8d1309
+		sourceColumn: DeveloperKey
+
 	partition DimDeveloper = m
 		mode: import
 		source =
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"developer"}),
-				    ReplacedNulls = Table.ReplaceValue(KeepColumns, null, "Unknown", Replacer.ReplaceValue, {"developer"}),
-				    DistinctRows = Table.Distinct(ReplacedNulls),
-				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"developer", "Developer"}}),
-				    SortedRows = Table.Sort(RenamedColumns, {{"Developer", Order.Ascending}})
+				    AddedColumns = Table.AddColumns(
+				        KeepColumns,
+				        {
+				            {"Developer", each NormalizeCategoryLabel([developer]), type text},
+				            {"DeveloperKey", each NormalizeCategoryKey([developer]), type text}
+				        }
+				    ),
+				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Developer", "DeveloperKey"}),
+				    SortedRows = Table.Sort(SelectedColumns, {{"Developer", Order.Ascending}}),
+				    DistinctRows = Table.Distinct(SortedRows, {"DeveloperKey"})
 				in
-				    SortedRows
+				    DistinctRows
 

@@ -8,15 +8,29 @@ table DimConsole
 		lineageTag: bc81f648-17d7-4905-83c8-1d5e781889c6
 		sourceColumn: Console
 
+	column ConsoleKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 5d0ca863-db55-44e0-8523-b865fda98a3e
+		sourceColumn: ConsoleKey
+
 	partition DimConsole = m
 		mode: import
 		source =
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"console"}),
-				    DistinctRows = Table.Distinct(KeepColumns),
-				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"console", "Console"}}),
-				    SortedRows = Table.Sort(RenamedColumns, {{"Console", Order.Ascending}})
+				    AddedColumns = Table.AddColumns(
+				        KeepColumns,
+				        {
+				            {"Console", each NormalizeCategoryLabel([console]), type text},
+				            {"ConsoleKey", each NormalizeCategoryKey([console]), type text}
+				        }
+				    ),
+				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Console", "ConsoleKey"}),
+				    SortedRows = Table.Sort(SelectedColumns, {{"Console", Order.Ascending}}),
+				    DistinctRows = Table.Distinct(SortedRows, {"ConsoleKey"})
 				in
-				    SortedRows
+				    DistinctRows
 

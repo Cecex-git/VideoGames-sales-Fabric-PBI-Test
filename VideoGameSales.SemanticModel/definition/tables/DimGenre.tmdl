@@ -8,15 +8,29 @@ table DimGenre
 		lineageTag: e33f311c-bbb3-4efd-812c-7a3a0593ba69
 		sourceColumn: Genre
 
+	column GenreKey
+		dataType: string
+		isNullable: false
+		isHidden: true
+		lineageTag: 4879d04a-c286-4927-a6ef-f179fb8c2fbb
+		sourceColumn: GenreKey
+
 	partition DimGenre = m
 		mode: import
 		source =
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"genre"}),
-				    DistinctRows = Table.Distinct(KeepColumns),
-				    RenamedColumns = Table.RenameColumns(DistinctRows, {{"genre", "Genre"}}),
-				    SortedRows = Table.Sort(RenamedColumns, {{"Genre", Order.Ascending}})
+				    AddedColumns = Table.AddColumns(
+				        KeepColumns,
+				        {
+				            {"Genre", each NormalizeCategoryLabel([genre]), type text},
+				            {"GenreKey", each NormalizeCategoryKey([genre]), type text}
+				        }
+				    ),
+				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Genre", "GenreKey"}),
+				    SortedRows = Table.Sort(SelectedColumns, {{"Genre", Order.Ascending}}),
+				    DistinctRows = Table.Distinct(SortedRows, {"GenreKey"})
 				in
-				    SortedRows
+				    DistinctRows
 
