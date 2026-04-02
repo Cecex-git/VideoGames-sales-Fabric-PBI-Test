@@ -21,13 +21,8 @@ table DimPublisher
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"publisher"}),
-				    AddedColumns = Table.AddColumns(
-				        KeepColumns,
-				        {
-				            {"Publisher", each NormalizeCategoryLabel([publisher]), type text},
-				            {"PublisherKey", each NormalizeCategoryKey([publisher]), type text}
-				        }
-				    ),
+				    AddedPublisher = Table.AddColumn(KeepColumns, "Publisher", each NormalizeCategoryLabel([publisher]), type text),
+				    AddedColumns = Table.AddColumn(AddedPublisher, "PublisherKey", each NormalizeCategoryKey([publisher]), type text),
 				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Publisher", "PublisherKey"}),
 				    SortedRows = Table.Sort(SelectedColumns, {{"Publisher", Order.Ascending}}),
 				    DistinctRows = Table.Distinct(SortedRows, {"PublisherKey"})

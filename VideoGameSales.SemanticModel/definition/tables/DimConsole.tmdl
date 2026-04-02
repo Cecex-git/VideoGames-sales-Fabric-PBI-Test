@@ -21,13 +21,8 @@ table DimConsole
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"console"}),
-				    AddedColumns = Table.AddColumns(
-				        KeepColumns,
-				        {
-				            {"Console", each NormalizeCategoryLabel([console]), type text},
-				            {"ConsoleKey", each NormalizeCategoryKey([console]), type text}
-				        }
-				    ),
+				    AddedConsole = Table.AddColumn(KeepColumns, "Console", each NormalizeCategoryLabel([console]), type text),
+				    AddedColumns = Table.AddColumn(AddedConsole, "ConsoleKey", each NormalizeCategoryKey([console]), type text),
 				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Console", "ConsoleKey"}),
 				    SortedRows = Table.Sort(SelectedColumns, {{"Console", Order.Ascending}}),
 				    DistinctRows = Table.Distinct(SortedRows, {"ConsoleKey"})

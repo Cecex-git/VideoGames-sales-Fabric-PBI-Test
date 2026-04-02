@@ -190,15 +190,10 @@ table FactGames
 				            {"developer", each NormalizeCategoryLabel(_), type text}
 				        }
 				    ),
-				    AddedCategoryKeys = Table.AddColumns(
-				        ShapedTextColumns,
-				        {
-				            {"console_key", each NormalizeCategoryKey([console]), type text},
-				            {"genre_key", each NormalizeCategoryKey([genre]), type text},
-				            {"publisher_key", each NormalizeCategoryKey([publisher]), type text},
-				            {"developer_key", each NormalizeCategoryKey([developer]), type text}
-				        }
-				    ),
+				    AddedConsoleKey = Table.AddColumn(ShapedTextColumns, "console_key", each NormalizeCategoryKey([console]), type text),
+				    AddedGenreKey = Table.AddColumn(AddedConsoleKey, "genre_key", each NormalizeCategoryKey([genre]), type text),
+				    AddedPublisherKey = Table.AddColumn(AddedGenreKey, "publisher_key", each NormalizeCategoryKey([publisher]), type text),
+				    AddedCategoryKeys = Table.AddColumn(AddedPublisherKey, "developer_key", each NormalizeCategoryKey([developer]), type text),
 				    RenamedColumns = Table.RenameColumns(AddedCategoryKeys, {
 				        {"img", "BoxArtPath"},
 				        {"title", "Title"},

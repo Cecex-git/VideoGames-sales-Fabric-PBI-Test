@@ -21,13 +21,8 @@ table DimDeveloper
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"developer"}),
-				    AddedColumns = Table.AddColumns(
-				        KeepColumns,
-				        {
-				            {"Developer", each NormalizeCategoryLabel([developer]), type text},
-				            {"DeveloperKey", each NormalizeCategoryKey([developer]), type text}
-				        }
-				    ),
+				    AddedDeveloper = Table.AddColumn(KeepColumns, "Developer", each NormalizeCategoryLabel([developer]), type text),
+				    AddedColumns = Table.AddColumn(AddedDeveloper, "DeveloperKey", each NormalizeCategoryKey([developer]), type text),
 				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Developer", "DeveloperKey"}),
 				    SortedRows = Table.Sort(SelectedColumns, {{"Developer", Order.Ascending}}),
 				    DistinctRows = Table.Distinct(SortedRows, {"DeveloperKey"})

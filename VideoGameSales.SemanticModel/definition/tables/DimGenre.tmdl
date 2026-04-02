@@ -21,13 +21,8 @@ table DimGenre
 				let
 				    Source = VideoGameSalesTypedSource,
 				    KeepColumns = Table.SelectColumns(Source, {"genre"}),
-				    AddedColumns = Table.AddColumns(
-				        KeepColumns,
-				        {
-				            {"Genre", each NormalizeCategoryLabel([genre]), type text},
-				            {"GenreKey", each NormalizeCategoryKey([genre]), type text}
-				        }
-				    ),
+				    AddedGenre = Table.AddColumn(KeepColumns, "Genre", each NormalizeCategoryLabel([genre]), type text),
+				    AddedColumns = Table.AddColumn(AddedGenre, "GenreKey", each NormalizeCategoryKey([genre]), type text),
 				    SelectedColumns = Table.SelectColumns(AddedColumns, {"Genre", "GenreKey"}),
 				    SortedRows = Table.Sort(SelectedColumns, {{"Genre", Order.Ascending}}),
 				    DistinctRows = Table.Distinct(SortedRows, {"GenreKey"})
