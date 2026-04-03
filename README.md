@@ -58,7 +58,49 @@ Enable these preview features in Power BI Desktop before opening the project:
 
 Then open `VideoGameSales.pbip`.
 
-The report is intentionally scaffolded as a blank PBIR report page so you can finish the visual layout in Power BI Desktop while keeping the project source-control friendly.
+The report now uses a **working PBIR shell** that opens in both Power BI Desktop and Fabric. You can still finish the visual layout in Power BI Desktop, but this repository already contains the report metadata shape needed for PBIR authoring outside Desktop.
+
+## Creating the next report correctly
+
+Do **not** start a new report from a hand-written minimal PBIR scaffold. We found that a report can deploy successfully while still failing to render in Desktop/Fabric if the report shell is too minimal.
+
+For the next report, use the current `VideoGameSales.Report\` folder as the template and replace only the report-specific content:
+
+1. Copy `VideoGameSales.Report\` to the new report folder name.
+2. Update `.platform` metadata (`displayName`, description, logical ID as needed).
+3. Update `definition.pbir` so `datasetReference.byPath.path` points to the target semantic model.
+4. Keep the modern PBIR shell files and folders in place:
+   - `definition\report.json`
+   - `definition\version.json`
+   - `definition\pages\`
+   - `StaticResources\SharedResources\BaseThemes\CY26SU02.json`
+5. Replace page names, page order, and visuals inside `definition\pages\`.
+
+### Minimum report shell requirements
+
+These files turned out to be important for a report to render correctly:
+
+- `.platform` with the `fabric/gitIntegration/platformProperties/2.0.0` schema and `config.version: "2.0"`
+- `definition.pbir` with a valid semantic model reference
+- `definition\version.json` with `version: "2.0.0"`
+- `definition\report.json` using the newer PBIR report schema (`report/3.2.0`) and including:
+  - `themeCollection.baseTheme`
+  - `resourcePackages`
+  - report `objects`
+  - report `settings`
+- `StaticResources\SharedResources\BaseThemes\CY26SU02.json`
+- `definition\pages\pages.json`
+- one folder per page with a modern `page.json` (currently using `page/2.1.0`)
+- one `visuals\<visualName>\visual.json` per visual
+
+### What failed before
+
+The original hand-authored report shell was too minimal. It deployed, but Desktop/Fabric failed during rendering with errors equivalent to missing page visual metadata (for example `visualContainers` access failures).
+
+The practical rule for this repository is:
+
+- **semantic model files can be scaffolded directly**
+- **report files should start from this repository's existing working PBIR shell, not from a minimal blank JSON draft**
 
 ## Deployment
 
@@ -116,4 +158,7 @@ It then creates a temporary parameter file for the deployment run, so the commit
 
 ## Notes
 
-- The blank PBIR report shell is valid as a scaffold, but the planned report pages and visuals still need to be authored in Power BI Desktop.
+- This repository now contains a renderable PBIR report shell plus starter visuals.
+- For future reports, treat `VideoGameSales.Report\` as the baseline template unless you intentionally refresh the shell from a newer known-good PBIR export.
+- See `PBIR_REPORT_AUTHORING_GUIDE.md` for a project-agnostic guide to creating PBIR reports without relying on Power BI Desktop to generate the initial files.
+- That guide also captures the main delivery gotchas from this project: report shell completeness, `.platform` requirements, Fabric connection binding, explicit date parsing, normalized relationship keys, and M-query deployment quirks.
