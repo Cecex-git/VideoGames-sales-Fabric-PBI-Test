@@ -5,7 +5,8 @@
     "sales_trend",
     "regional_split",
     "category_breakdown",
-    "top_titles"
+    "top_titles",
+    "checks_test"
   ],
   "activePageName": "overview"
 }
