@@ -1,0 +1,26 @@
+name: Validate Report PBIR
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-report-pbir:
+    name: Validate report PBIR
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate report PBIR
+        shell: pwsh
+        run: python .\scripts\validate_report_pbir.py
