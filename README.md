@@ -127,6 +127,16 @@ Configure:
 - GitHub secret `FABRIC_DEV_SOURCE_TABLE_NAME`
 - GitHub secret `FABRIC_DEV_CONNECTION_ID`
 
+## Pull request validation checks
+
+The repository now includes three separate PR validation workflows so you can require them individually in branch protection on `main`:
+
+- `Validate semantic model` runs `.\\scripts\\validate_semantic_model.py`
+- `Validate report PBIR` runs `.\\scripts\\validate_report_pbir.py`
+- `Validate project bindings` runs `.\\scripts\\validate_project_bindings.py`
+
+These workflows are repo-native, keep `workflow_dispatch`, and do not require Fabric secrets. They validate the semantic-model structure, the PBIR report shell and visual metadata, and the cross-file bindings between `.pbip`, `.platform`, `definition.pbir`, `parameter.yml`, and `deploy.py`.
+
 ## Source parameterization
 
 The semantic model is parameterized to read from a Fabric Lakehouse table, not from a local file.

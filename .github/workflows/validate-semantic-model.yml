@@ -1,0 +1,26 @@
+name: Validate Semantic Model
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-semantic-model:
+    name: Validate semantic model
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate semantic model
+        shell: pwsh
+        run: python .\scripts\validate_semantic_model.py

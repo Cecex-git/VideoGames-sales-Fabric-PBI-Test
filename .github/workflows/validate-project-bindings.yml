@@ -1,0 +1,26 @@
+name: Validate Project Bindings
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-project-bindings:
+    name: Validate project bindings
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate project bindings
+        shell: pwsh
+        run: python .\scripts\validate_project_bindings.py
