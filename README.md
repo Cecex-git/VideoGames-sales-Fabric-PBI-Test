@@ -137,6 +137,8 @@ The repository now includes three separate PR validation workflows so you can re
 
 These workflows are repo-native, keep `workflow_dispatch`, and do not require Fabric secrets. They validate the semantic-model structure, the PBIR report shell and visual metadata, and the cross-file bindings between `.pbip`, `.platform`, `definition.pbir`, `parameter.yml`, and `deploy.py`.
 
+The validators also enforce a small set of deterministic best-practice rules: TMDL table/partition naming consistency, tab-based TMDL indentation, non-empty PBIR pages, valid report-to-model field bindings, and required `.gitignore` entries for local `.pbi` artifacts. Description coverage on visible semantic-model objects is reported as warnings so it improves review quality without blocking normal report iteration.
+
 ## Source parameterization
 
 The semantic model is parameterized to read from a Fabric Lakehouse table, not from a local file.

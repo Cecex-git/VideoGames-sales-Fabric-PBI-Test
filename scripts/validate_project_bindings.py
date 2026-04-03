@@ -41,6 +41,9 @@ def main() -> None:
     parameter_path = REPO_ROOT / "parameter.yml"
     deploy_path = REPO_ROOT / "deploy.py"
     expressions_path = REPO_ROOT / "VideoGameSales.SemanticModel" / "definition" / "expressions.tmdl"
+    gitignore_path = REPO_ROOT / ".gitignore"
+    report_dir = REPO_ROOT / "VideoGameSales.Report"
+    semantic_model_dir = REPO_ROOT / "VideoGameSales.SemanticModel"
 
     required_paths = [
         pbip_path,
@@ -50,6 +53,9 @@ def main() -> None:
         parameter_path,
         deploy_path,
         expressions_path,
+        gitignore_path,
+        report_dir,
+        semantic_model_dir,
     ]
     for path in required_paths:
         if not path.exists():
@@ -65,6 +71,7 @@ def main() -> None:
     parameter_text = load_text(parameter_path)
     deploy_text = load_text(deploy_path)
     expressions_text = load_text(expressions_path)
+    gitignore_text = load_text(gitignore_path)
 
     if pbip_json.get("$schema") != "https://developer.microsoft.com/json-schemas/fabric/pbip/pbipProperties/1.0.0/schema.json":
         errors.append("VideoGameSales.pbip must use the pbipProperties/1.0.0 schema.")
@@ -72,6 +79,8 @@ def main() -> None:
     artifacts = pbip_json.get("artifacts", [])
     if len(artifacts) != 1 or artifacts[0].get("report", {}).get("path") != "VideoGameSales.Report":
         errors.append("VideoGameSales.pbip must reference the VideoGameSales.Report artifact by path.")
+    elif not (REPO_ROOT / artifacts[0]["report"]["path"]).is_dir():
+        errors.append("VideoGameSales.pbip references a report path that does not exist in the repository.")
 
     if definition_pbir_json.get("$schema") != "https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json":
         errors.append("VideoGameSales.Report\\definition.pbir must use the definitionProperties/2.0.0 schema.")
@@ -81,6 +90,12 @@ def main() -> None:
     dataset_reference = definition_pbir_json.get("datasetReference", {})
     if dataset_reference.get("byPath", {}).get("path") != "../VideoGameSales.SemanticModel":
         errors.append("VideoGameSales.Report\\definition.pbir must reference ../VideoGameSales.SemanticModel by path.")
+    else:
+        target_model_path = (report_dir / dataset_reference["byPath"]["path"]).resolve()
+        if target_model_path != semantic_model_dir.resolve():
+            errors.append("VideoGameSales.Report\\definition.pbir byPath target must resolve to VideoGameSales.SemanticModel.")
+        if not target_model_path.is_dir():
+            errors.append("VideoGameSales.Report\\definition.pbir references a semantic model path that does not exist.")
 
     for platform_name, platform_json, expected_type in (
         ("VideoGameSales.Report\\.platform", report_platform_json, "Report"),
@@ -148,6 +163,10 @@ def main() -> None:
     }.items():
         if re.search(r"\b[A-Za-z]:\\", text):
             errors.append(f"{path_name} contains an absolute Windows path, which should not be committed.")
+
+    for required_ignore in {"**/.pbi/localSettings.json", "**/.pbi/cache.abf"}:
+        if required_ignore not in gitignore_text:
+            errors.append(f".gitignore must include '{required_ignore}' to avoid committing local Power BI artifacts.")
 
     if errors:
         fail(errors)
