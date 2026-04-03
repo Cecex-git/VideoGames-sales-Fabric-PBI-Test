@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
-  "name": "a1f1a6dab03c50f91b7b",
-  "displayName": "Pagina 1",
+  "name": "sales_trend",
+  "displayName": "Sales Trend",
   "displayOption": "FitToPage",
   "height": 720,
   "width": 1280
