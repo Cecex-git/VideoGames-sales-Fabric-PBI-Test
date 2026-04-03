@@ -1,0 +1,117 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+  "name": "regional_sales_trend",
+  "position": {
+    "x": 24,
+    "y": 176,
+    "z": 1,
+    "height": 520,
+    "width": 1232,
+    "tabOrder": 4
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "Year"
+                }
+              },
+              "queryRef": "DimDate.Year",
+              "nativeQueryRef": "Year",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactGames"
+                    }
+                  },
+                  "Property": "NA Sales"
+                }
+              },
+              "queryRef": "FactGames.NA Sales",
+              "nativeQueryRef": "NA Sales"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactGames"
+                    }
+                  },
+                  "Property": "JP Sales"
+                }
+              },
+              "queryRef": "FactGames.JP Sales",
+              "nativeQueryRef": "JP Sales"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactGames"
+                    }
+                  },
+                  "Property": "PAL Sales"
+                }
+              },
+              "queryRef": "FactGames.PAL Sales",
+              "nativeQueryRef": "PAL Sales"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactGames"
+                    }
+                  },
+                  "Property": "Other Sales"
+                }
+              },
+              "queryRef": "FactGames.Other Sales",
+              "nativeQueryRef": "Other Sales"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "DimDate"
+                  }
+                },
+                "Property": "Year"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
