@@ -10,9 +10,15 @@ DEFINITION_DIR = MODEL_DIR / "definition"
 TABLES_DIR = DEFINITION_DIR / "tables"
 
 
-def fail(errors: list[str]) -> None:
+def print_findings(errors: list[str], warnings: list[str]) -> None:
     for error in errors:
         print(f"ERROR: {error}")
+    for warning in warnings:
+        print(f"WARNING: {warning}")
+
+
+def fail(errors: list[str], warnings: list[str]) -> None:
+    print_findings(errors, warnings)
     raise SystemExit(1)
 
 
@@ -42,21 +48,85 @@ def parse_table_file(path: Path) -> dict[str, object]:
     columns: set[str] = set()
     measures: set[str] = set()
     partitions: set[str] = set()
+    visible_columns_without_descriptions: list[str] = []
+    visible_measures_without_descriptions: list[str] = []
+    columns_without_data_types: list[str] = []
+    current_object: dict[str, object] | None = None
+    lines = load_text(path).splitlines()
 
-    for line in load_text(path).splitlines():
+    def finalize_current_object() -> None:
+        nonlocal current_object
+        if current_object is None:
+            return
+
+        kind = str(current_object["kind"])
+        name = str(current_object["name"])
+        has_description = bool(current_object["has_description"])
+        is_hidden = bool(current_object.get("is_hidden", False))
+        has_data_type = bool(current_object.get("has_data_type", True))
+
+        if kind == "column":
+            if not has_data_type:
+                columns_without_data_types.append(name)
+            if not is_hidden and not has_description:
+                visible_columns_without_descriptions.append(name)
+        elif kind == "measure" and not has_description:
+            visible_measures_without_descriptions.append(name)
+
+        current_object = None
+
+    for index, line in enumerate(lines):
+        if line.startswith(" "):
+            raise ValueError(f"{path.name}:{index + 1} uses leading spaces for indentation; use tabs in TMDL files.")
+
         table_name = table_name or extract_name(line, "table")
 
         column_name = extract_name(line, "column")
         if column_name:
+            finalize_current_object()
             columns.add(column_name)
+            current_object = {
+                "kind": "column",
+                "name": column_name,
+                "has_description": index > 0 and lines[index - 1].strip().startswith("///"),
+                "is_hidden": False,
+                "has_data_type": False,
+            }
+            continue
 
         measure_name = extract_name(line, "measure")
         if measure_name:
+            finalize_current_object()
             measures.add(measure_name)
+            current_object = {
+                "kind": "measure",
+                "name": measure_name,
+                "has_description": index > 0 and lines[index - 1].strip().startswith("///"),
+            }
+            continue
 
         partition_name = extract_name(line, "partition")
         if partition_name:
+            finalize_current_object()
             partitions.add(partition_name)
+            current_object = {
+                "kind": "partition",
+                "name": partition_name,
+                "has_description": index > 0 and lines[index - 1].strip().startswith("///"),
+            }
+            continue
+
+        if current_object is None:
+            continue
+
+        stripped = line.strip()
+        if str(current_object["kind"]) == "column":
+            if stripped.startswith("dataType:"):
+                current_object["has_data_type"] = True
+            elif stripped == "isHidden" or stripped == "isHidden: true":
+                current_object["is_hidden"] = True
+
+    finalize_current_object()
 
     if not table_name:
         raise ValueError(f"Unable to find table declaration in {path}")
@@ -66,6 +136,9 @@ def parse_table_file(path: Path) -> dict[str, object]:
         "columns": columns,
         "measures": measures,
         "partitions": partitions,
+        "visible_columns_without_descriptions": visible_columns_without_descriptions,
+        "visible_measures_without_descriptions": visible_measures_without_descriptions,
+        "columns_without_data_types": columns_without_data_types,
     }
 
 
@@ -91,15 +164,30 @@ def parse_column_reference(value: str) -> tuple[str, str] | None:
 
 def validate_relationships(relationships_path: Path, tables: dict[str, dict[str, object]]) -> list[str]:
     errors: list[str] = []
-    current_relationship: str | None = None
+    relationships: list[dict[str, str | None]] = []
+    current_relationship: dict[str, str | None] | None = None
 
     for line in load_text(relationships_path).splitlines():
         relationship_name = extract_name(line, "relationship")
         if relationship_name:
-            current_relationship = relationship_name
+            if current_relationship is not None:
+                relationships.append(current_relationship)
+            current_relationship = {
+                "name": relationship_name,
+                "fromColumn": None,
+                "toColumn": None,
+                "joinOnDateBehavior": None,
+            }
+            continue
+
+        if current_relationship is None:
             continue
 
         stripped = line.strip()
+        if stripped.startswith("joinOnDateBehavior:"):
+            current_relationship["joinOnDateBehavior"] = stripped.split(":", 1)[1].strip()
+            continue
+
         for property_name in ("fromColumn", "toColumn"):
             prefix = f"{property_name}:"
             if not stripped.startswith(prefix):
@@ -108,28 +196,68 @@ def validate_relationships(relationships_path: Path, tables: dict[str, dict[str,
             reference = parse_column_reference(stripped[len(prefix) :].strip())
             if reference is None:
                 errors.append(
-                    f"{relationships_path.name}: {current_relationship or '<unknown>'} has an invalid {property_name} reference."
+                    f"{relationships_path.name}: {current_relationship['name'] or '<unknown>'} has an invalid {property_name} reference."
                 )
                 continue
 
             table_name, column_name = reference
+            current_relationship[property_name] = f"{table_name}.{column_name}"
             table = tables.get(table_name)
             if not table:
                 errors.append(
-                    f"{relationships_path.name}: {current_relationship or '<unknown>'} references missing table '{table_name}'."
+                    f"{relationships_path.name}: {current_relationship['name'] or '<unknown>'} references missing table '{table_name}'."
                 )
                 continue
 
             if column_name not in table["columns"]:
                 errors.append(
-                    f"{relationships_path.name}: {current_relationship or '<unknown>'} references missing column '{table_name}.{column_name}'."
+                    f"{relationships_path.name}: {current_relationship['name'] or '<unknown>'} references missing column '{table_name}.{column_name}'."
                 )
+
+    if current_relationship is not None:
+        relationships.append(current_relationship)
+
+    related_tables: set[str] = set()
+    for relationship in relationships:
+        name = relationship["name"] or "<unknown>"
+        from_reference = relationship["fromColumn"]
+        to_reference = relationship["toColumn"]
+        if not from_reference or not to_reference:
+            continue
+
+        from_table_name, from_column_name = parse_column_reference(from_reference) or ("", "")
+        to_table_name, to_column_name = parse_column_reference(to_reference) or ("", "")
+        related_tables.update({from_table_name, to_table_name})
+
+        if relationship["joinOnDateBehavior"]:
+            continue
+
+        from_table = tables.get(from_table_name)
+        to_table = tables.get(to_table_name)
+        if not from_table or not to_table:
+            continue
+
+        if from_column_name.endswith("Key") or to_column_name.endswith("Key"):
+            continue
+
+        from_key_candidate = f"{from_column_name}Key"
+        to_key_candidate = f"{to_column_name}Key"
+        if from_key_candidate in from_table["columns"] and to_key_candidate in to_table["columns"]:
+            errors.append(
+                f"{relationships_path.name}: {name} joins on '{from_column_name}'/'{to_column_name}' instead of normalized key columns."
+            )
+
+    if len(tables) > 1:
+        orphaned_tables = sorted(table_name for table_name in tables if table_name not in related_tables)
+        for table_name in orphaned_tables:
+            errors.append(f"{relationships_path.name}: table '{table_name}' is not referenced by any relationship.")
 
     return errors
 
 
 def main() -> None:
     errors: list[str] = []
+    warnings: list[str] = []
 
     required_paths = [
         MODEL_DIR / ".platform",
@@ -143,11 +271,11 @@ def main() -> None:
             errors.append(f"Required semantic model path is missing: {path.relative_to(REPO_ROOT)}")
 
     if errors:
-        fail(errors)
+        fail(errors, warnings)
 
     table_files = sorted(TABLES_DIR.glob("*.tmdl"))
     if not table_files:
-        fail(["No TMDL table files were found in VideoGameSales.SemanticModel\\definition\\tables."])
+        fail(["No TMDL table files were found in VideoGameSales.SemanticModel\\definition\\tables."], warnings)
 
     model_name, model_references = parse_model_references(DEFINITION_DIR / "model.tmdl")
     if model_name != "VideoGameSales":
@@ -162,10 +290,20 @@ def main() -> None:
             continue
         tables[table_name] = table
 
+        if table_file.stem != table_name:
+            errors.append(f"{table_file.name} must match its table name declaration '{table_name}'.")
         if not table["columns"]:
             errors.append(f"{table_file.name} does not declare any columns.")
         if not table["partitions"]:
             errors.append(f"{table_file.name} does not declare any partitions.")
+        if table_name not in table["partitions"]:
+            errors.append(f"{table_file.name} must declare a partition named '{table_name}'.")
+        for column_name in table["columns_without_data_types"]:
+            errors.append(f"{table_file.name} column '{column_name}' is missing a dataType.")
+        for measure_name in table["visible_measures_without_descriptions"]:
+            warnings.append(f"{table_file.name} visible measure '{measure_name}' is missing a /// description.")
+        for column_name in table["visible_columns_without_descriptions"]:
+            warnings.append(f"{table_file.name} visible column '{column_name}' is missing a /// description.")
 
     table_names = set(tables)
     reference_names = set(model_references)
@@ -218,12 +356,15 @@ def main() -> None:
                 errors.append(f"FactGames is missing expected measure '{measure_name}'.")
 
     if errors:
-        fail(errors)
+        fail(errors, warnings)
+
+    print_findings(errors, warnings)
 
     print(
         f"Semantic model validation passed: {len(tables)} tables, "
         f"{sum(len(table['columns']) for table in tables.values())} columns, "
-        f"{sum(len(table['measures']) for table in tables.values())} measures."
+        f"{sum(len(table['measures']) for table in tables.values())} measures, "
+        f"{len(warnings)} warnings."
     )
 
 

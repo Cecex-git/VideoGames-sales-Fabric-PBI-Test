@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 
@@ -9,6 +10,7 @@ REPORT_DIR = REPO_ROOT / "VideoGameSales.Report"
 DEFINITION_DIR = REPORT_DIR / "definition"
 PAGES_DIR = DEFINITION_DIR / "pages"
 BASE_THEME_PATH = REPORT_DIR / "StaticResources" / "SharedResources" / "BaseThemes" / "CY26SU02.json"
+MODEL_TABLES_DIR = REPO_ROOT / "VideoGameSales.SemanticModel" / "definition" / "tables"
 
 
 def fail(errors: list[str]) -> None:
@@ -17,12 +19,132 @@ def fail(errors: list[str]) -> None:
     raise SystemExit(1)
 
 
+def extract_name(line: str, keyword: str) -> str | None:
+    stripped = line.strip()
+    prefix = f"{keyword} "
+    if not stripped.startswith(prefix):
+        return None
+
+    remainder = stripped[len(prefix) :].strip()
+    if remainder.startswith("'"):
+        end_quote = remainder.find("'", 1)
+        if end_quote == -1:
+            return None
+        return remainder[1:end_quote]
+
+    match = re.match(r"([^\s=]+)", remainder)
+    return match.group(1) if match else None
+
+
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def load_model_objects() -> dict[str, dict[str, set[str]]]:
+    tables: dict[str, dict[str, set[str]]] = {}
+
+    for table_file in sorted(MODEL_TABLES_DIR.glob("*.tmdl")):
+        table_name: str | None = None
+        columns: set[str] = set()
+        measures: set[str] = set()
+
+        for line in table_file.read_text(encoding="utf-8").splitlines():
+            table_name = table_name or extract_name(line, "table")
+
+            column_name = extract_name(line, "column")
+            if column_name:
+                columns.add(column_name)
+
+            measure_name = extract_name(line, "measure")
+            if measure_name:
+                measures.add(measure_name)
+
+        if table_name:
+            tables[table_name] = {"columns": columns, "measures": measures}
+
+    return tables
+
+
+def walk_nodes(node: object):
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from walk_nodes(value)
+    elif isinstance(node, list):
+        for item in node:
+            yield from walk_nodes(item)
+
+
+def validate_visual_bindings(
+    visual_json: dict,
+    visual_name: str,
+    model_objects: dict[str, dict[str, set[str]]],
+) -> list[str]:
+    errors: list[str] = []
+    binding_count = 0
+
+    for node in walk_nodes(visual_json):
+        source_ref = node.get("SourceRef") if isinstance(node, dict) else None
+        if isinstance(source_ref, dict):
+            entity = source_ref.get("Entity")
+            if entity and entity not in model_objects:
+                errors.append(f"Visual '{visual_name}' references unknown entity '{entity}'.")
+
+        if not isinstance(node, dict) or "field" not in node:
+            continue
+        if "queryRef" not in node and "nativeQueryRef" not in node:
+            continue
+
+        field = node["field"]
+        if not isinstance(field, dict):
+            continue
+
+        for field_kind, allowed_collection in (("Column", "columns"), ("Measure", "measures")):
+            field_ref = field.get(field_kind)
+            if not isinstance(field_ref, dict):
+                continue
+
+            binding_count += 1
+            entity = field_ref.get("Expression", {}).get("SourceRef", {}).get("Entity")
+            property_name = field_ref.get("Property")
+            query_ref = node.get("queryRef")
+            native_query_ref = node.get("nativeQueryRef")
+
+            if not entity:
+                errors.append(f"Visual '{visual_name}' has a {field_kind.lower()} binding without SourceRef.Entity.")
+                continue
+            if entity not in model_objects:
+                errors.append(f"Visual '{visual_name}' references unknown entity '{entity}'.")
+                continue
+            if not property_name:
+                errors.append(f"Visual '{visual_name}' binding for entity '{entity}' is missing Property.")
+                continue
+            if property_name not in model_objects[entity][allowed_collection]:
+                errors.append(
+                    f"Visual '{visual_name}' references missing {field_kind.lower()} '{entity}.{property_name}'."
+                )
+            if not query_ref or "." not in str(query_ref):
+                errors.append(f"Visual '{visual_name}' binding '{entity}.{property_name}' is missing a valid queryRef.")
+            else:
+                query_table, query_property = str(query_ref).split(".", 1)
+                if query_table != entity or query_property != property_name:
+                    errors.append(
+                        f"Visual '{visual_name}' binding '{entity}.{property_name}' has mismatched queryRef '{query_ref}'."
+                    )
+            if not native_query_ref:
+                errors.append(
+                    f"Visual '{visual_name}' binding '{entity}.{property_name}' is missing nativeQueryRef."
+                )
+
+    if binding_count == 0:
+        errors.append(f"Visual '{visual_name}' does not contain any field bindings.")
+
+    return errors
+
+
 def main() -> None:
     errors: list[str] = []
+    model_objects = load_model_objects()
 
     required_paths = [
         REPORT_DIR / ".platform",
@@ -109,8 +231,12 @@ def main() -> None:
             errors.append(f"Page '{page_name}' must use the page/2.1.0 schema.")
         if page_json.get("name") != page_name:
             errors.append(f"Page '{page_name}' must keep page.json name aligned with the folder name.")
+        if not str(page_json.get("displayName", "")).strip():
+            errors.append(f"Page '{page_name}' must define a non-empty displayName.")
 
         visual_dirs = sorted(path for path in visuals_dir.iterdir() if path.is_dir())
+        if not visual_dirs:
+            errors.append(f"Page '{page_name}' must contain at least one visual.")
         if len(visual_dirs) > 7:
             errors.append(f"Page '{page_name}' has {len(visual_dirs)} visuals; the limit is 7.")
 
@@ -134,6 +260,8 @@ def main() -> None:
             visual_definition = visual_json.get("visual", {})
             if not visual_definition.get("visualType"):
                 errors.append(f"Visual '{visual_dir.name}' is missing visual.visualType.")
+
+            errors.extend(validate_visual_bindings(visual_json, visual_dir.name, model_objects))
 
         total_visuals += len(visual_dirs)
 
