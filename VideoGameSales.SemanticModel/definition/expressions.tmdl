@@ -59,7 +59,45 @@ expression VideoGameSalesTypedSource =
 		    Source = Lakehouse.Contents([CreateNavigationProperties = false, EnableFolding = false]),
 		    WorkspaceData = Source{[workspaceId = FabricWorkspaceId]}[Data],
 		    LakehouseData = WorkspaceData{[lakehouseId = FabricLakehouseId]}[Data],
-		    RawTable = LakehouseData{[Id = VideoGameSalesLakehouseTable, ItemKind = "Table"]}[Data],
+		    RequestedTableKey = Text.Upper(Text.Trim(VideoGameSalesLakehouseTable)),
+		    CandidateTables = Table.SelectRows(
+		        LakehouseData,
+		        each Record.FieldOrDefault(_, "ItemKind", null) = "Table"
+		    ),
+		    MatchingTables = Table.SelectRows(
+		        CandidateTables,
+		        (row as record) as logical =>
+		            List.AnyTrue(
+		                List.Transform(
+		                    {"Id", "Name", "DisplayName"},
+		                    (fieldName as text) as logical =>
+		                        let
+		                            FieldValue = Record.FieldOrDefault(row, fieldName, null),
+		                            NormalizedFieldValue =
+		                                if FieldValue = null then
+		                                    null
+		                                else
+		                                    Text.Upper(Text.Trim(Text.From(FieldValue)))
+		                        in
+		                            NormalizedFieldValue = RequestedTableKey
+		                )
+		            )
+		    ),
+		    RawTable =
+		        if Table.RowCount(MatchingTables) = 1 then
+		            MatchingTables{0}[Data]
+		        else if Table.RowCount(MatchingTables) > 1 then
+		            error Error.Record(
+		                "LakehouseTableAmbiguous",
+		                "Multiple Lakehouse tables matched the configured source table name.",
+		                [RequestedTable = VideoGameSalesLakehouseTable]
+		            )
+		        else
+		            error Error.Record(
+		                "LakehouseTableNotFound",
+		                "Unable to find the configured Lakehouse table.",
+		                [RequestedTable = VideoGameSalesLakehouseTable]
+		            ),
 		    TypedColumns = Table.TransformColumnTypes(RawTable, {
 		        {"img", type text},
 		        {"title", type text},
