@@ -49,7 +49,8 @@ table DimDate
 				    MaxDate = Date.From(List.Max(ReleaseDates[release_date])),
 				    DateList = List.Dates(MinDate, Duration.Days(MaxDate - MinDate) + 1, #duration(1, 0, 0, 0)),
 				    ToTable = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}),
-				    AddYear = Table.AddColumn(ToTable, "Year", each Date.Year([Date]), Int64.Type),
+				    TypedDates = Table.TransformColumnTypes(ToTable, {{"Date", type date}}),
+				    AddYear = Table.AddColumn(TypedDates, "Year", each Date.Year([Date]), Int64.Type),
 				    AddMonthNumber = Table.AddColumn(AddYear, "Month Number", each Date.Month([Date]), Int64.Type),
 				    AddMonth = Table.AddColumn(AddMonthNumber, "Month", each Date.ToText([Date], "MMM"), type text),
 				    AddQuarter = Table.AddColumn(AddMonth, "Quarter", each "Q" & Number.ToText(Date.QuarterOfYear([Date])), type text)
