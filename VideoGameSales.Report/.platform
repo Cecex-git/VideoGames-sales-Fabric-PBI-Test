@@ -1,11 +1,12 @@
 {
-  "version": 1,
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
     "displayName": "VideoGameSales",
     "type": "Report",
     "description": "PBIR report for the Video Game Sales PBIP project."
   },
   "config": {
+    "version": "2.0",
     "logicalId": "9953f0f6-6fa4-444c-b666-bb9f9d7a2951"
   }
 }
