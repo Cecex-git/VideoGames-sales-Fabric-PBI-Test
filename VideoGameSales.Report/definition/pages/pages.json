@@ -7,7 +7,8 @@
     "category_breakdown",
     "top_titles",
     "checks_test",
-    "workflow_test"
+    "workflow_test",
+    "deploy_test"
   ],
   "activePageName": "overview"
 }
