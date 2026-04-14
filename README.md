@@ -114,7 +114,7 @@ python .\deploy.py --workspace-name "<Your Fabric Workspace>" --environment dev
 
 ### GitHub Actions deployment
 
-The workflow in `.github\workflows\deploy-dev.yml` deploys on pushes to the `dev` branch.
+The workflow in `.github\workflows\deploy-dev.yml` deploys on pushes to the `main` branch after PR merges, and can also be run manually with `workflow_dispatch`.
 
 Configure:
 
