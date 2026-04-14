@@ -1,0 +1,79 @@
+name: Promote PBIP Dev to Prod
+
+on:
+  workflow_dispatch:
+
+jobs:
+  promote:
+    runs-on: windows-latest
+    environment: prod
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Azure CLI login
+        shell: pwsh
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          if (-not $env:AZURE_CLIENT_ID) {
+            throw "GitHub secret AZURE_CLIENT_ID is not set."
+          }
+
+          if (-not $env:AZURE_CLIENT_SECRET) {
+            throw "GitHub secret AZURE_CLIENT_SECRET is not set."
+          }
+
+          if (-not $env:AZURE_TENANT_ID) {
+            throw "GitHub secret AZURE_TENANT_ID is not set."
+          }
+
+          az login --service-principal --username "$env:AZURE_CLIENT_ID" --password "$env:AZURE_CLIENT_SECRET" --tenant "$env:AZURE_TENANT_ID" --allow-no-subscriptions
+
+      - name: Verify Fabric CLI
+        shell: pwsh
+        run: fab --version
+
+      - name: Promote DEV workspace items to PROD
+        shell: pwsh
+        env:
+          FABRIC_DEV_WORKSPACE: ${{ vars.FABRIC_DEV_WORKSPACE }}
+          FABRIC_PROD_WORKSPACE: ${{ vars.FABRIC_PROD_WORKSPACE }}
+        run: |
+          if (-not $env:FABRIC_DEV_WORKSPACE) {
+            throw "Repository/environment variable FABRIC_DEV_WORKSPACE is not set."
+          }
+
+          if (-not $env:FABRIC_PROD_WORKSPACE) {
+            throw "Repository/environment variable FABRIC_PROD_WORKSPACE is not set."
+          }
+
+          $devWorkspacePath = "$env:FABRIC_DEV_WORKSPACE.Workspace"
+          $prodWorkspacePath = "$env:FABRIC_PROD_WORKSPACE.Workspace"
+          $semanticModelPath = "$devWorkspacePath/VideoGameSales.SemanticModel"
+          $reportPath = "$devWorkspacePath/VideoGameSales.Report"
+
+          fab exists $devWorkspacePath
+          fab exists $prodWorkspacePath
+          fab exists $semanticModelPath
+          fab exists $reportPath
+
+          fab copy $semanticModelPath $prodWorkspacePath --force
+          fab copy $reportPath $prodWorkspacePath --force
+
+          fab exists "$prodWorkspacePath/VideoGameSales.SemanticModel"
+          fab exists "$prodWorkspacePath/VideoGameSales.Report"
