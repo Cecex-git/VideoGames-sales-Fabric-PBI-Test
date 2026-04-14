@@ -3,7 +3,7 @@ name: Deploy PBIP to Fabric Dev
 on:
   push:
     branches:
-      - dev
+      - main
   workflow_dispatch:
 
 jobs:
