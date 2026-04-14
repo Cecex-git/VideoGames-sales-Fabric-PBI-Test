@@ -48,6 +48,16 @@ jobs:
         shell: pwsh
         run: fab --version
 
+      - name: Fabric CLI login
+        shell: pwsh
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          fab auth login -u "$env:AZURE_CLIENT_ID" -p "$env:AZURE_CLIENT_SECRET" --tenant "$env:AZURE_TENANT_ID"
+          fab auth status
+
       - name: Promote DEV workspace items to PROD
         shell: pwsh
         env:
