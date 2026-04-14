@@ -6,7 +6,8 @@
     "regional_split",
     "category_breakdown",
     "top_titles",
-    "checks_test"
+    "checks_test",
+    "workflow_test"
   ],
   "activePageName": "overview"
 }
