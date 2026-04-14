@@ -116,12 +116,15 @@ python .\deploy.py --workspace-name "<Your Fabric Workspace>" --environment dev
 
 The workflow in `.github\workflows\deploy-dev.yml` deploys on pushes to the `main` branch after PR merges, and can also be run manually with `workflow_dispatch`.
 
+The workflow in `.github\workflows\deploy-prod.yml` is a **manual promotion** workflow. It copies the `VideoGameSales` semantic model and report from the Fabric DEV workspace into the Fabric PROD workspace, so PROD promotion stays explicit and can be protected with the `prod` environment.
+
 Configure:
 
 - GitHub secret `AZURE_CLIENT_ID`
 - GitHub secret `AZURE_CLIENT_SECRET`
 - GitHub secret `AZURE_TENANT_ID`
 - GitHub environment/repository variable `FABRIC_DEV_WORKSPACE`
+- GitHub environment/repository variable `FABRIC_PROD_WORKSPACE`
 - GitHub secret `FABRIC_DEV_SOURCE_WORKSPACE_ID`
 - GitHub secret `FABRIC_DEV_SOURCE_LAKEHOUSE_ID`
 - GitHub secret `FABRIC_DEV_SOURCE_TABLE_NAME`
