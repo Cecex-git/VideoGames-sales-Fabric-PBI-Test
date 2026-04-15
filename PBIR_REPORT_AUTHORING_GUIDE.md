@@ -240,7 +240,10 @@ You can:
 
 - one folder per page
 - `name` should match the folder name
+- `displayName` should not be empty
 - use stable names like `overview`, `sales_trend`, `details`
+- do not leave a page empty; every authored page should contain at least one visual
+- when removing a page, update `definition\pages\pages.json` and delete the matching page folder
 
 ## Adding visuals
 
@@ -311,6 +314,18 @@ definition\pages\<page-name>\visuals\<visual-name>\visual.json
 }
 ```
 
+## Rename safety for model-bound visuals
+
+When you rename a semantic-model measure or column, update **all** related PBIR references together.
+
+For model-bound visuals, that usually means keeping these values aligned:
+
+- `Property`
+- `queryRef`
+- `nativeQueryRef`
+
+If only one of those values is updated, the JSON can still look valid while the visual continues pointing at a stale model name.
+
 ## Known-good visual type names
 
 Use PBIR visual type names such as:
@@ -347,9 +362,12 @@ Before deployment, verify:
    - `settings`
 5. the base theme file exists at the path referenced in `report.json`
 6. every page listed in `pages.json` has a matching folder and `page.json`
-7. every visual folder contains `visual.json`
-8. all field references in visuals match real tables/measures in the semantic model
-9. `.pbi\localSettings.json` and `.pbi\cache.abf` are ignored by Git
+7. every page has a non-empty `displayName`
+8. every authored page contains at least one visual
+9. every visual folder contains `visual.json`
+10. all field references in visuals match real tables/measures in the semantic model
+11. if a model field was renamed, `Property`, `queryRef`, and `nativeQueryRef` were updated together
+12. `.pbi\localSettings.json` and `.pbi\cache.abf` are ignored by Git
 
 ## Git ignore
 
