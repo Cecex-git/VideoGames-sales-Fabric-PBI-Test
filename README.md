@@ -88,17 +88,18 @@ The report already uses a **working PBIR shell** that opens in both Power BI Des
 
 Do **not** start a new report from a hand-written minimal PBIR scaffold. We found that a report can deploy successfully while still failing to render in Desktop/Fabric if the report shell is too minimal.
 
-For the next report, use the current `VideoGameSales.Report\` folder as the template and replace only the report-specific content:
+For the next report, use the current `VideoGameSales.Report\` folder as the starting template.
 
 1. Copy `VideoGameSales.Report\` to the new report folder name.
-2. Update `.platform` metadata (`displayName`, description, logical ID as needed).
-3. Update `definition.pbir` so `datasetReference.byPath.path` points to the target semantic model.
-4. Keep the modern PBIR shell files and folders in place:
+2. Change only the report-specific files and metadata:
+   - `.platform` metadata (`displayName`, description, logical ID as needed)
+   - `definition.pbir` so `datasetReference.byPath.path` points to the target semantic model
+   - page folders, `page.json`, `pages.json`, and visual files inside `definition\pages\`
+3. Keep these shell files and resources unchanged unless you are intentionally refreshing the report shell from a newer known-good PBIR export:
    - `definition\report.json`
    - `definition\version.json`
-   - `definition\pages\`
    - `StaticResources\SharedResources\BaseThemes\CY26SU02.json`
-5. Replace page names, page order, and visuals inside `definition\pages\`.
+4. When you add, rename, or remove pages, keep `definition\pages\pages.json`, the page folder names, and each page's `page.json.name` aligned.
 
 ### Minimum report shell requirements
 
