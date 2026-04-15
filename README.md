@@ -1,6 +1,6 @@
 # Video Game Sales PBIP
 
-This repository contains a Power BI Project (`.pbip`) scaffold for the video game sales dataset, ready for Git versioning and Microsoft Fabric deployment.
+This repository contains a Power BI Project (`.pbip`) for the video game sales dataset, with the semantic model and report stored in Git-friendly PBIP/PBIR/TMDL form and deployed to Microsoft Fabric through GitHub Actions.
 
 The source data comes from the Kaggle dataset [Video Game Sales and Industry Data (1980-2024)](https://www.kaggle.com/datasets/bhushandivekar/video-game-sales-and-industry-data-1980-2024).
 
@@ -12,14 +12,26 @@ The source data comes from the Kaggle dataset [Video Game Sales and Industry Dat
 
 - `VideoGameSales.pbip` as the project entry point
 - `VideoGameSales.SemanticModel\definition\` with TMDL-exported semantic model files
-- `VideoGameSales.Report\definition\` with a blank PBIR report shell
+- `VideoGameSales.Report\definition\` with a working PBIR report and five pages
 - `deploy.py` for PBIP deployment with `fabric-cicd`
-- `.github\workflows\deploy-dev.yml` for GitHub-to-Fabric deployment
+- `.github\workflows\deploy-dev.yml` for automatic DEV deployment after merges to `main`
+- `.github\workflows\deploy-prod.yml` for manual PROD deployment with PROD-specific bindings
+- `.github\workflows\validate-*.yml` for semantic model, PBIR, and project binding validation
 - `scripts\fabric_preflight.ps1` for local Fabric CLI checks
 
-## Current model scaffold
+## Current report
 
-The semantic model includes:
+The report currently contains these pages:
+
+- `overview`
+- `sales_trend`
+- `regional_split`
+- `category_breakdown`
+- `top_titles`
+
+## Current semantic model
+
+The semantic model currently includes:
 
 - `FactGames` imported from a Fabric Lakehouse table
 - `DimConsole`
@@ -54,6 +66,12 @@ Measures currently included:
    .\scripts\fabric_preflight.ps1 -WorkspaceName "<Your Fabric Workspace>"
    ```
 
+3. Optional: install the `power-bi-agentic-development` Copilot CLI plugin:
+
+   ```powershell
+   copilot plugin install data-goblin/power-bi-agentic-development
+   ```
+
 ## Power BI Desktop authoring
 
 Enable these preview features in Power BI Desktop before opening the project:
@@ -64,7 +82,7 @@ Enable these preview features in Power BI Desktop before opening the project:
 
 Then open `VideoGameSales.pbip`.
 
-The report now uses a **working PBIR shell** that opens in both Power BI Desktop and Fabric. You can still finish the visual layout in Power BI Desktop, but this repository already contains the report metadata shape needed for PBIR authoring outside Desktop.
+The report already uses a **working PBIR shell** that opens in both Power BI Desktop and Fabric. You can still refine layout and visuals in Power BI Desktop, but this repository already contains a functioning PBIR structure rather than a minimal placeholder shell.
 
 ## Creating the next report correctly
 
@@ -118,13 +136,21 @@ Use interactive auth for a manual deployment:
 python .\deploy.py --workspace-name "<Your Fabric Workspace>" --environment dev
 ```
 
+For local deployments, provide the source binding values either as CLI arguments or environment variables:
+
+- `FABRIC_SOURCE_WORKSPACE_ID`
+- `FABRIC_SOURCE_LAKEHOUSE_ID`
+- `FABRIC_SOURCE_TABLE_NAME`
+- `FABRIC_SEMANTIC_MODEL_CONNECTION_ID`
+
 ### GitHub Actions deployment
 
-The workflow in `.github\workflows\deploy-dev.yml` deploys on pushes to the `main` branch after PR merges, and can also be run manually with `workflow_dispatch`.
+The repository currently uses two deployment workflows:
 
-The workflow in `.github\workflows\deploy-prod.yml` is a **manual PROD deployment** workflow. It deploys the repository PBIP artifacts into the Fabric PROD workspace with **PROD-specific source lakehouse and semantic model binding values**, so the PROD semantic model points to the PROD lakehouse and the PROD report binds to the PROD semantic model.
+- `.github\workflows\deploy-dev.yml` deploys to the DEV workspace on pushes to `main` after PR merges, and can also be run manually with `workflow_dispatch`.
+- `.github\workflows\deploy-prod.yml` is a **manual PROD deployment** workflow. It deploys the repository PBIP artifacts into the Fabric PROD workspace with **PROD-specific source lakehouse and semantic model binding values**, so the PROD semantic model points to the PROD lakehouse and the PROD report binds to the PROD semantic model.
 
-Configure:
+Configure these GitHub secrets and variables:
 
 - GitHub secret `AZURE_CLIENT_ID`
 - GitHub secret `AZURE_CLIENT_SECRET`
@@ -183,7 +209,7 @@ It then creates a temporary parameter file for the deployment run, so the commit
 
 ## Notes
 
-- This repository now contains a renderable PBIR report shell plus starter visuals.
+- This repository now contains a real PBIR report with five authored pages, not just a renderable shell.
 - For future reports, treat `VideoGameSales.Report\` as the baseline template unless you intentionally refresh the shell from a newer known-good PBIR export.
 - See `PBIR_REPORT_AUTHORING_GUIDE.md` for a project-agnostic guide to creating PBIR reports without relying on Power BI Desktop to generate the initial files.
 - That guide also captures the main delivery gotchas from this project: report shell completeness, `.platform` requirements, Fabric connection binding, explicit date parsing, normalized relationship keys, and M-query deployment quirks.
