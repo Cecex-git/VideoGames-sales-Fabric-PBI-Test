@@ -345,11 +345,12 @@ def main() -> None:
         fact_measures = tables["FactGames"]["measures"]
         for measure_name in {
             "Titles",
-            "Total Sales",
-            "NA Sales",
-            "JP Sales",
-            "PAL Sales",
-            "Other Sales",
+            "Total Sales (M copies)",
+            "NA Sales (M copies)",
+            "JP Sales (M copies)",
+            "PAL Sales (M copies)",
+            "Other Sales (M copies)",
+            "Average Sales per Title (M copies)",
             "Average Critic Score",
         }:
             if measure_name not in fact_measures:

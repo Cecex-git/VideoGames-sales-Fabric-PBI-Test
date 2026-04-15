@@ -8,32 +8,32 @@ table FactGames
 		displayFolder: Core Metrics
 		lineageTag: edbbb36a-1840-4647-a0c4-fde21c6d8c94
 
-	/// Total global sales in millions of units.
-	measure 'Total Sales' = SUM(FactGames[TotalSales])
+	/// Total global sales in millions of copies sold.
+	measure 'Total Sales (M copies)' = SUM(FactGames[TotalSales])
 		formatString: #,0.00
 		displayFolder: Core Metrics
 		lineageTag: c81864b1-b301-42c3-9ad2-efcd47566c61
 
-	/// Total North America sales in millions of units.
-	measure 'NA Sales' = SUM(FactGames[NASales])
+	/// Total North America sales in millions of copies sold.
+	measure 'NA Sales (M copies)' = SUM(FactGames[NASales])
 		formatString: #,0.00
 		displayFolder: Regional Sales
 		lineageTag: 2173ca57-b069-46ce-8b09-d98ec862a08a
 
-	/// Total Japan sales in millions of units.
-	measure 'JP Sales' = SUM(FactGames[JPSales])
+	/// Total Japan sales in millions of copies sold.
+	measure 'JP Sales (M copies)' = SUM(FactGames[JPSales])
 		formatString: #,0.00
 		displayFolder: Regional Sales
 		lineageTag: 17f02eef-3375-4bf3-bd22-3416577af446
 
-	/// Total PAL sales in millions of units.
-	measure 'PAL Sales' = SUM(FactGames[PALSales])
+	/// Total PAL sales in millions of copies sold.
+	measure 'PAL Sales (M copies)' = SUM(FactGames[PALSales])
 		formatString: #,0.00
 		displayFolder: Regional Sales
 		lineageTag: e01cfb84-4c9b-4a14-b0d2-3aabae7c4fe8
 
-	/// Total other-region sales in millions of units.
-	measure 'Other Sales' = SUM(FactGames[OtherSales])
+	/// Total other-region sales in millions of copies sold.
+	measure 'Other Sales (M copies)' = SUM(FactGames[OtherSales])
 		formatString: #,0.00
 		displayFolder: Regional Sales
 		lineageTag: 0deb0696-8557-4434-ad56-7c03c562c2b0
@@ -44,8 +44,8 @@ table FactGames
 		displayFolder: Quality Metrics
 		lineageTag: 1f672b5d-90ae-40a3-b161-ed9799f34ee9
 
-	/// Average total sales per title in the current filter context.
-	measure 'Average Sales per Title' = DIVIDE([Total Sales], [Titles])
+	/// Average sales per title in millions of copies sold for the current filter context.
+	measure 'Average Sales per Title (M copies)' = DIVIDE([Total Sales (M copies)], [Titles])
 		formatString: #,0.00
 		displayFolder: Core Metrics
 		lineageTag: 2c0b9cfc-09ae-4113-a482-2df128e91fae

@@ -5,10 +5,7 @@
     "sales_trend",
     "regional_split",
     "category_breakdown",
-    "top_titles",
-    "checks_test",
-    "workflow_test",
-    "deploy_test"
+    "top_titles"
   ],
   "activePageName": "overview"
 }
