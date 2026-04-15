@@ -4,6 +4,10 @@ This repository contains a Power BI Project (`.pbip`) scaffold for the video gam
 
 The source data comes from the Kaggle dataset [Video Game Sales and Industry Data (1980-2024)](https://www.kaggle.com/datasets/bhushandivekar/video-game-sales-and-industry-data-1980-2024).
 
+## Sample report image
+
+![Sample report image](Img1.JPG)
+
 ## What is included
 
 - `VideoGameSales.pbip` as the project entry point
