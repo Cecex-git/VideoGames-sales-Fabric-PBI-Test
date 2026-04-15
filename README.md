@@ -116,7 +116,7 @@ python .\deploy.py --workspace-name "<Your Fabric Workspace>" --environment dev
 
 The workflow in `.github\workflows\deploy-dev.yml` deploys on pushes to the `main` branch after PR merges, and can also be run manually with `workflow_dispatch`.
 
-The workflow in `.github\workflows\deploy-prod.yml` is a **manual promotion** workflow. It copies the `VideoGameSales` semantic model and report from the Fabric DEV workspace into the Fabric PROD workspace, so PROD promotion stays explicit and can be protected with the `prod` environment.
+The workflow in `.github\workflows\deploy-prod.yml` is a **manual PROD deployment** workflow. It deploys the repository PBIP artifacts into the Fabric PROD workspace with **PROD-specific source lakehouse and semantic model binding values**, so the PROD semantic model points to the PROD lakehouse and the PROD report binds to the PROD semantic model.
 
 Configure:
 
@@ -129,6 +129,10 @@ Configure:
 - GitHub secret `FABRIC_DEV_SOURCE_LAKEHOUSE_ID`
 - GitHub secret `FABRIC_DEV_SOURCE_TABLE_NAME`
 - GitHub secret `FABRIC_DEV_CONNECTION_ID`
+- GitHub secret `FABRIC_PROD_SOURCE_WORKSPACE_ID`
+- GitHub secret `FABRIC_PROD_SOURCE_LAKEHOUSE_ID`
+- GitHub secret `FABRIC_PROD_SOURCE_TABLE_NAME`
+- GitHub secret `FABRIC_PROD_CONNECTION_ID`
 
 ## Pull request validation checks
 
