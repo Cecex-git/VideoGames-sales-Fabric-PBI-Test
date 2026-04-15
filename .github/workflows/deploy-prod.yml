@@ -48,42 +48,33 @@ jobs:
         shell: pwsh
         run: fab --version
 
-      - name: Fabric CLI login
+      - name: Deploy PBIP to Fabric Prod
         shell: pwsh
         env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: |
-          fab auth login -u "$env:AZURE_CLIENT_ID" -p "$env:AZURE_CLIENT_SECRET" --tenant "$env:AZURE_TENANT_ID"
-          fab auth status
-
-      - name: Promote DEV workspace items to PROD
-        shell: pwsh
-        env:
-          FABRIC_DEV_WORKSPACE: ${{ vars.FABRIC_DEV_WORKSPACE }}
           FABRIC_PROD_WORKSPACE: ${{ vars.FABRIC_PROD_WORKSPACE }}
+          FABRIC_SOURCE_WORKSPACE_ID: ${{ secrets.FABRIC_PROD_SOURCE_WORKSPACE_ID }}
+          FABRIC_SOURCE_LAKEHOUSE_ID: ${{ secrets.FABRIC_PROD_SOURCE_LAKEHOUSE_ID }}
+          FABRIC_SOURCE_TABLE_NAME: ${{ secrets.FABRIC_PROD_SOURCE_TABLE_NAME }}
+          FABRIC_SEMANTIC_MODEL_CONNECTION_ID: ${{ secrets.FABRIC_PROD_CONNECTION_ID }}
         run: |
-          if (-not $env:FABRIC_DEV_WORKSPACE) {
-            throw "Repository/environment variable FABRIC_DEV_WORKSPACE is not set."
-          }
-
           if (-not $env:FABRIC_PROD_WORKSPACE) {
             throw "Repository/environment variable FABRIC_PROD_WORKSPACE is not set."
           }
 
-          $devWorkspacePath = "$env:FABRIC_DEV_WORKSPACE.Workspace"
-          $prodWorkspacePath = "$env:FABRIC_PROD_WORKSPACE.Workspace"
-          $semanticModelPath = "$devWorkspacePath/VideoGameSales.SemanticModel"
-          $reportPath = "$devWorkspacePath/VideoGameSales.Report"
+          if (-not $env:FABRIC_SOURCE_WORKSPACE_ID) {
+            throw "GitHub secret FABRIC_PROD_SOURCE_WORKSPACE_ID is not set."
+          }
 
-          fab exists $devWorkspacePath
-          fab exists $prodWorkspacePath
-          fab exists $semanticModelPath
-          fab exists $reportPath
+          if (-not $env:FABRIC_SOURCE_LAKEHOUSE_ID) {
+            throw "GitHub secret FABRIC_PROD_SOURCE_LAKEHOUSE_ID is not set."
+          }
 
-          fab copy $semanticModelPath $prodWorkspacePath --force
-          fab copy $reportPath $prodWorkspacePath --force
+          if (-not $env:FABRIC_SOURCE_TABLE_NAME) {
+            throw "GitHub secret FABRIC_PROD_SOURCE_TABLE_NAME is not set."
+          }
 
-          fab exists "$prodWorkspacePath/VideoGameSales.SemanticModel"
-          fab exists "$prodWorkspacePath/VideoGameSales.Report"
+          if (-not $env:FABRIC_SEMANTIC_MODEL_CONNECTION_ID) {
+            throw "GitHub secret FABRIC_PROD_CONNECTION_ID is not set."
+          }
+
+          python -u deploy.py --spn-auth --workspace-name "$env:FABRIC_PROD_WORKSPACE" --environment prod
