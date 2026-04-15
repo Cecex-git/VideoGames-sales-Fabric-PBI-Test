@@ -42,11 +42,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "Total Sales"
+                  "Property": "Total Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.Total Sales",
-              "nativeQueryRef": "Total Sales"
+              "queryRef": "FactGames.Total Sales (M copies)",
+              "nativeQueryRef": "Total Sales (M copies)"
             }
           ]
         }

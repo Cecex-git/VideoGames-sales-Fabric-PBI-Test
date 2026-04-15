@@ -2,6 +2,8 @@
 
 This repository contains a Power BI Project (`.pbip`) scaffold for the video game sales dataset, ready for Git versioning and Microsoft Fabric deployment.
 
+The source data comes from the Kaggle dataset [Video Game Sales and Industry Data (1980-2024)](https://www.kaggle.com/datasets/bhushandivekar/video-game-sales-and-industry-data-1980-2024).
+
 ## What is included
 
 - `VideoGameSales.pbip` as the project entry point
@@ -25,13 +27,13 @@ The semantic model includes:
 Measures currently included:
 
 - `Titles`
-- `Total Sales`
-- `NA Sales`
-- `JP Sales`
-- `PAL Sales`
-- `Other Sales`
+- `Total Sales (M copies)`
+- `NA Sales (M copies)`
+- `JP Sales (M copies)`
+- `PAL Sales (M copies)`
+- `Other Sales (M copies)`
 - `Average Critic Score`
-- `Average Sales per Title`
+- `Average Sales per Title (M copies)`
 - `Titles with Critic Score`
 
 ## Local setup

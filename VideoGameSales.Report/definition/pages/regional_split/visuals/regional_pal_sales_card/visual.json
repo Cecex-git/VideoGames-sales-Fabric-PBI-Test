@@ -23,11 +23,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "PAL Sales"
+                  "Property": "PAL Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.PAL Sales",
-              "nativeQueryRef": "PAL Sales"
+              "queryRef": "FactGames.PAL Sales (M copies)",
+              "nativeQueryRef": "PAL Sales (M copies)"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "FactGames"
                   }
                 },
-                "Property": "PAL Sales"
+                "Property": "PAL Sales (M copies)"
               }
             },
             "direction": "Descending"

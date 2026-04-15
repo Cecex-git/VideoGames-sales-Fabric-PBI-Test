@@ -23,11 +23,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "JP Sales"
+                  "Property": "JP Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.JP Sales",
-              "nativeQueryRef": "JP Sales"
+              "queryRef": "FactGames.JP Sales (M copies)",
+              "nativeQueryRef": "JP Sales (M copies)"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "FactGames"
                   }
                 },
-                "Property": "JP Sales"
+                "Property": "JP Sales (M copies)"
               }
             },
             "direction": "Descending"

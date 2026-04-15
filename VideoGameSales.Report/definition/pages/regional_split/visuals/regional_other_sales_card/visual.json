@@ -23,11 +23,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "Other Sales"
+                  "Property": "Other Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.Other Sales",
-              "nativeQueryRef": "Other Sales"
+              "queryRef": "FactGames.Other Sales (M copies)",
+              "nativeQueryRef": "Other Sales (M copies)"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "FactGames"
                   }
                 },
-                "Property": "Other Sales"
+                "Property": "Other Sales (M copies)"
               }
             },
             "direction": "Descending"

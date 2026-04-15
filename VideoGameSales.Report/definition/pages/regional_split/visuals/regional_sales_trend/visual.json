@@ -42,11 +42,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "NA Sales"
+                  "Property": "NA Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.NA Sales",
-              "nativeQueryRef": "NA Sales"
+              "queryRef": "FactGames.NA Sales (M copies)",
+              "nativeQueryRef": "NA Sales (M copies)"
             },
             {
               "field": {
@@ -56,11 +56,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "JP Sales"
+                  "Property": "JP Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.JP Sales",
-              "nativeQueryRef": "JP Sales"
+              "queryRef": "FactGames.JP Sales (M copies)",
+              "nativeQueryRef": "JP Sales (M copies)"
             },
             {
               "field": {
@@ -70,11 +70,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "PAL Sales"
+                  "Property": "PAL Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.PAL Sales",
-              "nativeQueryRef": "PAL Sales"
+              "queryRef": "FactGames.PAL Sales (M copies)",
+              "nativeQueryRef": "PAL Sales (M copies)"
             },
             {
               "field": {
@@ -84,11 +84,11 @@
                       "Entity": "FactGames"
                     }
                   },
-                  "Property": "Other Sales"
+                  "Property": "Other Sales (M copies)"
                 }
               },
-              "queryRef": "FactGames.Other Sales",
-              "nativeQueryRef": "Other Sales"
+              "queryRef": "FactGames.Other Sales (M copies)",
+              "nativeQueryRef": "Other Sales (M copies)"
             }
           ]
         }
