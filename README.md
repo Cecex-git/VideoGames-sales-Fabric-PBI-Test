@@ -84,6 +84,8 @@ Then open `VideoGameSales.pbip`.
 
 The report already uses a **working PBIR shell** that opens in both Power BI Desktop and Fabric. You can still refine layout and visuals in Power BI Desktop, but this repository already contains a functioning PBIR structure rather than a minimal placeholder shell.
 
+The committed semantic model intentionally uses placeholder Fabric source identifiers such as `00000000-0000-0000-0000-000000000000` for the workspace and `11111111-1111-1111-1111-111111111111` for the lakehouse. When you open the project locally in Power BI Desktop, the model will not load data until you replace those parameter values with real IDs for your workspace, lakehouse, and table.
+
 ## Creating the next report correctly
 
 Do **not** start a new report from a hand-written minimal PBIR scaffold. We found that a report can deploy successfully while still failing to render in Desktop/Fabric if the report shell is too minimal.
@@ -190,6 +192,8 @@ Parameters currently defined in `VideoGameSales.SemanticModel\definition\express
 - `VideoGameSalesLakehouseTable`
 
 The repository only contains safe placeholder values. During deployment, `deploy.py` renders a temporary `parameter.yml` with values from the caller and passes that file to `fabric-cicd`.
+
+That means a fresh checkout will still point to the committed placeholder IDs until you supply real values. For local authoring in Power BI Desktop, update the model parameters manually so the semantic model can connect to your actual Fabric workspace and lakehouse. The deployment workflows do this replacement automatically by injecting the real values from GitHub secrets and variables.
 
 Recommended setup:
 
